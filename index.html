@@ -143,25 +143,25 @@
         </div>
         <div class="search-container">
             <span class="material-icons-round">search</span>
-            <input type="text" id="searchInput" placeholder="Cerca per nome, tipo o nota..." onkeyup="renderRequests()">
+            <input type="text" id="searchInput" placeholder="Cerca per nome, tipo o nota..." onkeyup="window.renderRequests()">
         </div>
     </header>
 
     <main id="requests-container">
         </main>
 
-    <button class="fab" onclick="openModal()">
+    <button class="fab" onclick="window.openModal()">
         <span class="material-icons-round">add</span>
     </button>
 
-    <div id="add-modal" onclick="closeModal(event)">
+    <div id="add-modal" onclick="window.closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>Nuova Richiesta</h3>
-                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="closeModal()">close</span>
+                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal()">close</span>
             </div>
             
-            <form id="requestForm" onsubmit="saveRequest(event)">
+            <form id="requestForm" onsubmit="window.saveRequest(event)">
                 <div class="form-group">
                     <label>Operatore</label>
                     <input type="text" id="reqName" class="form-control" placeholder="Es. Rossi M." required>
@@ -187,74 +187,98 @@
                     <textarea id="reqNotes" class="form-control" placeholder="Es. Cambio con Bianchi per il turno di mattina..." required></textarea>
                 </div>
 
-                <button type="submit" class="btn-submit">INVIA RICHIESTA</button>
+                <button type="submit" id="btnSubmit" class="btn-submit">INVIA RICHIESTA</button>
             </form>
         </div>
     </div>
 
-    <script>
-        // Chiave per salvare i dati temporaneamente nel browser (in attesa di Firebase)
-        const STORAGE_KEY = "richieste_118_db";
-        let requests = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    <script type="module">
+        // Importa Firebase SDKs dal CDN (Versione 10)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        const ICONS = {
-            "cambio": "swap_horiz",
-            "ferie": "beach_access",
-            "permesso": "timer",
-            "altro": "assignment"
-        };
-        const LABELS = {
-            "cambio": "Cambio Turno",
-            "ferie": "Ferie",
-            "permesso": "Permesso",
-            "altro": "Altro"
+        // La tua configurazione Firebase
+        const firebaseConfig = {
+            apiKey: "AIzaSyAMX2ycf_6P3AcBvarVX4XNKbdposkuqgE",
+            authDomain: "area-personale-autsocc-118-rsm.firebaseapp.com",
+            projectId: "area-personale-autsocc-118-rsm",
+            storageBucket: "area-personale-autsocc-118-rsm.firebasestorage.app",
+            messagingSenderId: "910283994567",
+            appId: "1:910283994567:web:d9c45b5f4b5a83b92595e2",
+            measurementId: "G-9P8X82Y4H5"
         };
 
-        // Funzione per salvare una nuova richiesta
-        function saveRequest(e) {
+        // Inizializza Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let requests = []; // Array per i dati dal cloud
+
+        const ICONS = { "cambio": "swap_horiz", "ferie": "beach_access", "permesso": "timer", "altro": "assignment" };
+        const LABELS = { "cambio": "Cambio Turno", "ferie": "Ferie", "permesso": "Permesso", "altro": "Altro" };
+
+        // 1. ASCOLTATORE IN TEMPO REALE DA FIREBASE
+        // Questa funzione intercetta ogni modifica, aggiunta o rimozione dal database all'istante
+        const q = query(collection(db, "richieste_turni"), orderBy("targetDate", "desc"));
+        onSnapshot(q, (snapshot) => {
+            requests = [];
+            snapshot.forEach((doc) => {
+                // Prende i dati e aggiunge l'ID univoco di Firebase
+                requests.push({ id: doc.id, ...doc.data() });
+            });
+            window.renderRequests(); // Aggiorna la grafica
+        });
+
+        // 2. FUNZIONE PER SALVARE (Invia a Firebase)
+        window.saveRequest = async function(e) {
             e.preventDefault();
+            const btn = document.getElementById('btnSubmit');
+            btn.textContent = "INVIO IN CORSO...";
+            btn.style.opacity = "0.7";
             
             const newReq = {
-                id: Date.now().toString(),
-                timestamp: new Date().toISOString(), // Ora esatta di invio
+                timestamp: new Date().toISOString(),
                 name: document.getElementById('reqName').value.trim(),
                 type: document.getElementById('reqType').value,
                 targetDate: document.getElementById('reqDate').value,
                 notes: document.getElementById('reqNotes').value.trim()
             };
 
-            requests.push(newReq);
-            
-            // Ordina per data del turno (dalla più recente alla più vecchia)
-            requests.sort((a, b) => new Date(b.targetDate) - new Date(a.targetDate));
-            
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
-            
-            document.getElementById('requestForm').reset();
-            closeModal();
-            renderRequests();
-            
-            if(navigator.vibrate) navigator.vibrate(50);
-        }
-
-        // Elimina richiesta
-        function deleteRequest(id) {
-            if(confirm("Sei sicuro di voler eliminare questa richiesta?")) {
-                requests = requests.filter(r => r.id !== id);
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(requests));
-                renderRequests();
-                if(navigator.vibrate) navigator.vibrate([30, 30]);
+            try {
+                // Aggiunge un nuovo documento nella collezione "richieste_turni"
+                await addDoc(collection(db, "richieste_turni"), newReq);
+                
+                document.getElementById('requestForm').reset();
+                window.closeModal();
+                if(navigator.vibrate) navigator.vibrate(50);
+            } catch (error) {
+                console.error("Errore salvataggio: ", error);
+                alert("Si è verificato un errore durante l'invio.");
+            } finally {
+                btn.textContent = "INVIA RICHIESTA";
+                btn.style.opacity = "1";
             }
-        }
+        };
 
-        // Mostra le richieste raggruppate per mese
-        function renderRequests() {
+        // 3. FUNZIONE PER ELIMINARE (Rimuove da Firebase)
+        window.deleteRequest = async function(id) {
+            if(confirm("Sei sicuro di voler eliminare questa richiesta?")) {
+                try {
+                    await deleteDoc(doc(db, "richieste_turni", id));
+                    if(navigator.vibrate) navigator.vibrate([30, 30]);
+                } catch (error) {
+                    console.error("Errore eliminazione: ", error);
+                }
+            }
+        };
+
+        // 4. RENDERING GRAFICO
+        window.renderRequests = function() {
             const container = document.getElementById('requests-container');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             
             container.innerHTML = "";
 
-            // Filtra in base alla ricerca
             const filtered = requests.filter(r => {
                 return r.name.toLowerCase().includes(searchTerm) || 
                        r.notes.toLowerCase().includes(searchTerm) ||
@@ -271,7 +295,6 @@
                 return;
             }
 
-            // Raggruppa per mese/anno in base alla data del turno richiesto
             const groups = {};
             filtered.forEach(r => {
                 const dateObj = new Date(r.targetDate);
@@ -282,7 +305,6 @@
                 groups[capitalizedMonth].push(r);
             });
 
-            // Genera l'HTML
             for (const [month, reqList] of Object.entries(groups)) {
                 let monthHtml = `
                     <div class="month-group">
@@ -293,8 +315,6 @@
 
                 reqList.forEach(r => {
                     const targetD = new Date(r.targetDate).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    
-                    // Formattazione data di invio (Timestamp)
                     const sentD = new Date(r.timestamp);
                     const sentStr = `Inviata il ${sentD.toLocaleDateString('it-IT')} alle ${sentD.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}`;
 
@@ -304,47 +324,36 @@
                                 <div class="req-user"><span class="material-icons-round" style="font-size:18px;color:var(--primary)">person</span> ${r.name}</div>
                                 <div class="req-date-target">${targetD}</div>
                             </div>
-                            
                             <div class="req-type-badge type-${r.type}">
                                 <span class="material-icons-round" style="font-size:14px">${ICONS[r.type]}</span>
                                 ${LABELS[r.type]}
                             </div>
-                            
                             <div class="req-notes">${r.notes}</div>
-                            
                             <div class="req-timestamp">${sentStr}</div>
-                            
-                            <button class="btn-delete" onclick="deleteRequest('${r.id}')">Elimina</button>
+                            <button class="btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>
                         </div>
                     `;
                 });
-
                 monthHtml += `</div>`;
                 container.innerHTML += monthHtml;
             }
         }
 
-        // Funzioni per il Modale
-        function openModal() {
+        // 5. GESTIONE MODALE
+        window.openModal = function() {
             if(navigator.vibrate) navigator.vibrate(20);
             const m = document.getElementById('add-modal');
             m.style.display = 'flex';
-            // Set data minima a oggi
             document.getElementById('reqDate').min = new Date().toISOString().split("T")[0];
             setTimeout(() => m.classList.add('open'), 10);
         }
 
-        function closeModal(e) {
+        window.closeModal = function(e) {
             if (e && e.target !== e.currentTarget) return;
             const m = document.getElementById('add-modal');
             m.classList.remove('open');
             setTimeout(() => m.style.display = 'none', 300);
         }
-
-        // Inizializza l'interfaccia al caricamento
-        window.onload = () => {
-            renderRequests();
-        };
     </script>
 </body>
 </html>
