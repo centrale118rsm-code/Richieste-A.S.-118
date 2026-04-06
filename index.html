@@ -31,14 +31,15 @@
             color: white; border-radius: 0 0 24px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
             position: sticky; top: 0; z-index: 100;
         }
-        .header-top { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
-        .btn-back {
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
+        .header-left { display: flex; align-items: center; gap: 15px; }
+        .btn-back, .btn-icon {
             background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
             color: white; width: 40px; height: 40px; border-radius: 12px; display: flex;
             align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px);
             text-decoration: none;
         }
-        .btn-back:active { transform: scale(0.92); }
+        .btn-back:active, .btn-icon:active { transform: scale(0.92); }
         .page-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px; }
 
         /* --- SEARCH BAR --- */
@@ -52,45 +53,54 @@
         .search-container input:focus { background: rgba(255,255,255,0.3); outline: none; }
         .search-container .material-icons-round { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.8); }
 
-        /* --- MAIN CONTENT --- */
-        main { padding: 20px; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        /* --- MAIN CONTENT (LISTA) --- */
+        main { padding: 10px 20px; flex: 1; overflow-y: auto; padding-bottom: 100px; }
         
-        .month-group { margin-bottom: 24px; }
+        .section-title { font-size: 0.85rem; font-weight: 800; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; }
+        .month-group { margin-bottom: 24px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
         .month-header {
-            font-size: 0.8rem; font-weight: 800; color: var(--text-sec);
-            text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px;
-            display: flex; align-items: center; gap: 8px;
+            background: #f1f5f9; padding: 12px 16px;
+            font-size: 0.85rem; font-weight: 800; color: var(--text-sec);
+            text-transform: uppercase; letter-spacing: 1px;
+            display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);
         }
         
-        .request-card {
-            background: var(--bg-card); border-radius: 16px; padding: 16px;
-            border: 1px solid var(--border); box-shadow: var(--shadow);
-            margin-bottom: 12px; position: relative; display: flex; flex-direction: column; gap: 8px;
+        .list-row {
+            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 10px; cursor: pointer;
+            transition: background 0.2s; background-color: #ffffff;
         }
-        .req-header { display: flex; justify-content: space-between; align-items: flex-start; }
-        .req-user { font-weight: 800; font-size: 1.05rem; color: var(--text-main); display: flex; align-items: center; gap: 6px; }
-        .req-date-target { font-size: 0.8rem; font-weight: 700; color: var(--primary); background: #dbeafe; padding: 4px 8px; border-radius: 8px; }
+        .list-row:last-child { border-bottom: none; }
         
-        .req-type-badge {
-            display: inline-flex; align-items: center; gap: 4px; font-size: 0.75rem;
-            font-weight: 700; padding: 4px 10px; border-radius: 20px; width: fit-content;
+        /* ANIMAZIONI E SFONDI STATO */
+        @keyframes flashPending {
+            0% { background-color: #ffffff; }
+            50% { background-color: #fef9c3; /* Giallino molto chiaro */ }
+            100% { background-color: #ffffff; }
         }
-        
-        /* Colori per tipo richiesta */
-        .type-cambio { background: #fef3c7; color: #d97706; border: 1px solid #fde68a; }
-        .type-ferie { background: #ffedd5; color: #c2410c; border: 1px solid #fed7aa; }
-        .type-permesso { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-        .type-altro { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+        .row-pending { animation: flashPending 2.5s infinite ease-in-out; }
+        .row-confirmed { background-color: #dcfce7 !important; /* Verdino chiaro */ }
+        .row-rejected { background-color: #fee2e2 !important; /* Rossino chiaro */ }
 
-        .req-notes { font-size: 0.85rem; color: var(--text-sec); line-height: 1.4; background: var(--bg); padding: 10px; border-radius: 10px; }
-        .req-timestamp { font-size: 0.65rem; color: #94a3b8; text-align: right; margin-top: 4px; font-weight: 500; }
+        .row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .row-content { flex: 1; min-width: 0; }
+        .row-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row-subtitle { font-size: 0.75rem; color: var(--text-sec); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row-date { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-align: right; white-space: nowrap; }
+        .row-status { display: flex; gap: 4px; flex-direction: column; align-items: flex-end; }
         
-        .btn-delete { position: absolute; bottom: 12px; left: 16px; color: #ef4444; background: none; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; padding: 4px; }
-        
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .status-green { background: #10b981; }
+        .status-red { background: #ef4444; }
+        .status-gray { background: #cbd5e1; }
+
+        .row-obscured { opacity: 0.6; background: #f8fafc !important; animation: none; }
+        .row-obscured .row-title { text-decoration: line-through; color: var(--text-sec); }
+
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-sec); }
         .empty-state .material-icons-round { font-size: 48px; opacity: 0.5; margin-bottom: 10px; }
 
-        /* --- FAB & MODAL (Per aggiungere richieste) --- */
+        /* --- FAB & MODAL --- */
         .fab {
             position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px;
             background: linear-gradient(135deg, #2563eb, #1e3a8a); color: white;
@@ -101,24 +111,28 @@
         .fab:active { transform: scale(0.9); }
         .fab .material-icons-round { font-size: 32px; }
 
-        #add-modal {
+        .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
             z-index: 2000; display: none; align-items: flex-end; justify-content: center;
             opacity: 0; transition: opacity 0.3s;
         }
-        #add-modal.open { opacity: 1; }
+        .modal-overlay.open { opacity: 1; }
+        
         .modal-content {
-            background: var(--bg-card); width: 100%; max-width: 500px; border-radius: 24px 24px 0 0;
+            background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0;
             padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
             max-height: 90vh; overflow-y: auto;
         }
-        #add-modal.open .modal-content { transform: translateY(0); }
+        .modal-overlay.open .modal-content { transform: translateY(0); }
         
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
         .modal-header h3 { font-size: 1.2rem; font-weight: 900; }
         
         .form-group { margin-bottom: 16px; }
-        .form-group label { display: block; font-size: 0.8rem; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase; }
+        .form-row { display: flex; gap: 12px; }
+        .form-row .form-group { flex: 1; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase; }
+        
         .form-control {
             width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
             font-size: 0.95rem; font-weight: 600; background: var(--bg); color: var(--text-main);
@@ -132,14 +146,47 @@
             cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
         }
         .btn-submit:active { transform: scale(0.97); }
+
+        /* Dettagli Modal Stili */
+        .detail-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-label { font-size: 0.75rem; color: var(--text-sec); font-weight: 700; text-transform: uppercase; }
+        .detail-value { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-top: 4px; }
+        
+        .admin-controls { background: #f1f5f9; padding: 16px; border-radius: 12px; margin-top: 20px; }
+        .admin-controls h4 { font-size: 0.85rem; text-transform: uppercase; margin-bottom: 12px; color: var(--text-sec); }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; }
+        .checkbox-wrapper input { width: 18px; height: 18px; }
+        
+        .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
+        .btn-hide { background: #f59e0b; color: white; }
+        .btn-delete { background: #ef4444; color: white; }
+
+        /* Colori dinamici per tipi */
+        .bg-copertura { background: #e0e7ff; color: #4338ca; }
+        .bg-ferie { background: #ffedd5; color: #c2410c; }
+        .bg-ferie-prec { background: #ffedd5; color: #9a3412; }
+        .bg-permesso-ore { background: #dcfce7; color: #15803d; }
+        .bg-permesso { background: #bbf7d0; color: #166534; }
+        .bg-cambio-rep { background: #fef3c7; color: #b45309; }
+        .bg-cambio-turno { background: #fde68a; color: #92400e; }
+        .bg-recupero { background: #f3e8ff; color: #7e22ce; }
+        .bg-default { background: #f1f5f9; color: #475569; }
+
     </style>
 </head>
 <body>
 
     <header>
         <div class="header-top">
-            <a href="area_autisti.html" class="btn-back"><span class="material-icons-round">arrow_back</span></a>
-            <div class="page-title">Gestione Richieste</div>
+            <div class="header-left">
+                <a href="area_autisti.html" class="btn-back"><span class="material-icons-round">arrow_back</span></a>
+                <div class="page-title">Gestione Richieste</div>
+            </div>
+            <button class="btn-icon" onclick="window.downloadJSON()" title="Scarica Backup JSON">
+                <span class="material-icons-round">download</span>
+            </button>
         </div>
         <div class="search-container">
             <span class="material-icons-round">search</span>
@@ -150,41 +197,84 @@
     <main id="requests-container">
         </main>
 
-    <button class="fab" onclick="window.openModal()">
+    <button class="fab" onclick="window.openAddModal()">
         <span class="material-icons-round">add</span>
     </button>
 
-    <div id="add-modal" onclick="window.closeModal(event)">
+    <div id="add-modal" class="modal-overlay" onclick="window.closeModal('add-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
                 <h3>Nuova Richiesta</h3>
-                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal()">close</span>
+                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('add-modal')">close</span>
             </div>
             
             <form id="requestForm" onsubmit="window.saveRequest(event)">
                 <div class="form-group">
                     <label>Operatore</label>
-                    <input type="text" id="reqName" class="form-control" placeholder="Es. Rossi M." required>
+                    <select id="reqName" class="form-control" required>
+                        <option value="" disabled selected>Seleziona operatore...</option>
+                        <option value="Barbieri">Barbieri</option>
+                        <option value="Pazzaglia">Pazzaglia</option>
+                        <option value="Bianchi">Bianchi</option>
+                        <option value="Sarti">Sarti</option>
+                        <option value="Ghiotti">Ghiotti</option>
+                        <option value="Berardi">Berardi</option>
+                        <option value="Michelotti">Michelotti</option>
+                        <option value="Volpini">Volpini</option>
+                        <option value="Fabbri">Fabbri</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
                     <label>Tipo di Richiesta</label>
                     <select id="reqType" class="form-control" required>
-                        <option value="cambio">🔄 Cambio Turno</option>
+                        <option value="" disabled selected>Seleziona tipo...</option>
+                        <option value="copertura_reperibilita">🛡 Copertura Reperibilità</option>
                         <option value="ferie">🏖 Ferie</option>
+                        <option value="ferie_anno_prec">🏖 Ferie Anno Precedente</option>
+                        <option value="permesso_ore">⏱ Permesso Ore</option>
                         <option value="permesso">⏱ Permesso</option>
-                        <option value="altro">📋 Altro</option>
+                        <option value="cambio_reperibilita">🔄 Cambio Reperibilità</option>
+                        <option value="cambio_turno">🔄 Cambio Turno</option>
+                        <option value="recupero_ore">⏳ Recupero Ore</option>
                     </select>
                 </div>
 
+                <div class="form-group" id="swap-group" style="display:none; background:#f1f5f9; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+                    <label>Con chi fai il cambio?</label>
+                    <select id="reqNameSwap" class="form-control">
+                        <option value="" disabled selected>Seleziona operatore...</option>
+                        <option value="Barbieri">Barbieri</option>
+                        <option value="Pazzaglia">Pazzaglia</option>
+                        <option value="Bianchi">Bianchi</option>
+                        <option value="Sarti">Sarti</option>
+                        <option value="Ghiotti">Ghiotti</option>
+                        <option value="Berardi">Berardi</option>
+                        <option value="Michelotti">Michelotti</option>
+                        <option value="Volpini">Volpini</option>
+                        <option value="Fabbri">Fabbri</option>
+                    </select>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Dal Giorno</label>
+                        <input type="date" id="reqDateFrom" class="form-control" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Al Giorno</label>
+                        <input type="date" id="reqDateTo" class="form-control" required>
+                    </div>
+                </div>
+
                 <div class="form-group">
-                    <label>Data Riferimento Turno</label>
-                    <input type="date" id="reqDate" class="form-control" required>
+                    <label>Giorni effettivi di assenza</label>
+                    <input type="number" step="0.5" id="reqDays" class="form-control" placeholder="Es. 1 o 0.5" required>
                 </div>
 
                 <div class="form-group">
                     <label>Note / Dettagli</label>
-                    <textarea id="reqNotes" class="form-control" placeholder="Es. Cambio con Bianchi per il turno di mattina..." required></textarea>
+                    <textarea id="reqNotes" class="form-control" placeholder="Inserisci qui i dettagli della richiesta..."></textarea>
                 </div>
 
                 <button type="submit" id="btnSubmit" class="btn-submit">INVIA RICHIESTA</button>
@@ -192,12 +282,22 @@
         </div>
     </div>
 
-    <script type="module">
-        // Importa Firebase SDKs dal CDN (Versione 10)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    <div id="detail-modal" class="modal-overlay" onclick="window.closeModal('detail-modal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3>Dettaglio Richiesta</h3>
+                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('detail-modal')">close</span>
+            </div>
+            
+            <div id="detail-content">
+                </div>
+        </div>
+    </div>
 
-        // La tua configurazione Firebase
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
         const firebaseConfig = {
             apiKey: "AIzaSyAMX2ycf_6P3AcBvarVX4XNKbdposkuqgE",
             authDomain: "area-personale-autsocc-118-rsm.firebaseapp.com",
@@ -208,71 +308,148 @@
             measurementId: "G-9P8X82Y4H5"
         };
 
-        // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        let requests = []; // Array per i dati dal cloud
+        let requests = []; 
 
-        const ICONS = { "cambio": "swap_horiz", "ferie": "beach_access", "permesso": "timer", "altro": "assignment" };
-        const LABELS = { "cambio": "Cambio Turno", "ferie": "Ferie", "permesso": "Permesso", "altro": "Altro" };
+        const LABELS = { 
+            "copertura_reperibilita": "Copertura Reperibilità",
+            "ferie": "Ferie", 
+            "ferie_anno_prec": "Ferie Anno Prec.",
+            "permesso_ore": "Permesso Ore",
+            "permesso": "Permesso",
+            "cambio_reperibilita": "Cambio Reperibilità",
+            "cambio_turno": "Cambio Turno",
+            "recupero_ore": "Recupero Ore"
+        };
 
-        // 1. ASCOLTATORE IN TEMPO REALE DA FIREBASE
-        // Questa funzione intercetta ogni modifica, aggiunta o rimozione dal database all'istante
-        const q = query(collection(db, "richieste_turni"), orderBy("targetDate", "desc"));
+        const ICONS = { 
+            "copertura_reperibilita": "shield",
+            "ferie": "beach_access", 
+            "ferie_anno_prec": "history",
+            "permesso_ore": "schedule",
+            "permesso": "timer",
+            "cambio_reperibilita": "swap_calls",
+            "cambio_turno": "swap_horiz",
+            "recupero_ore": "hourglass_empty"
+        };
+
+        const COLORS = {
+            "copertura_reperibilita": "bg-copertura",
+            "ferie": "bg-ferie", 
+            "ferie_anno_prec": "bg-ferie-prec",
+            "permesso_ore": "bg-permesso-ore",
+            "permesso": "bg-permesso",
+            "cambio_reperibilita": "bg-cambio-rep",
+            "cambio_turno": "bg-cambio-turno",
+            "recupero_ore": "bg-recupero"
+        };
+
+        // GESTIONE VISIBILITÀ MENU DI CAMBIO
+        document.getElementById('reqType').addEventListener('change', function(e) {
+            const val = e.target.value;
+            const swapGroup = document.getElementById('swap-group');
+            const swapInput = document.getElementById('reqNameSwap');
+            
+            if(val === 'cambio_turno' || val === 'copertura_reperibilita') {
+                swapGroup.style.display = 'block';
+                swapInput.required = true;
+            } else {
+                swapGroup.style.display = 'none';
+                swapInput.required = false;
+                swapInput.value = '';
+            }
+        });
+
+        // 1. ASCOLTATORE FIREBASE
+        const q = query(collection(db, "richieste_turni"), orderBy("dateFrom", "desc"));
         onSnapshot(q, (snapshot) => {
             requests = [];
             snapshot.forEach((doc) => {
-                // Prende i dati e aggiunge l'ID univoco di Firebase
                 requests.push({ id: doc.id, ...doc.data() });
             });
-            window.renderRequests(); // Aggiorna la grafica
+            window.renderRequests();
         });
 
-        // 2. FUNZIONE PER SALVARE (Invia a Firebase)
+        // 2. SALVATAGGIO NUOVA RICHIESTA
         window.saveRequest = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
             btn.textContent = "INVIO IN CORSO...";
             btn.style.opacity = "0.7";
             
+            const reqType = document.getElementById('reqType').value;
             const newReq = {
                 timestamp: new Date().toISOString(),
-                name: document.getElementById('reqName').value.trim(),
-                type: document.getElementById('reqType').value,
-                targetDate: document.getElementById('reqDate').value,
-                notes: document.getElementById('reqNotes').value.trim()
+                name: document.getElementById('reqName').value,
+                type: reqType,
+                swapWith: (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita') ? document.getElementById('reqNameSwap').value : null,
+                dateFrom: document.getElementById('reqDateFrom').value,
+                dateTo: document.getElementById('reqDateTo').value,
+                effectiveDays: document.getElementById('reqDays').value,
+                notes: document.getElementById('reqNotes').value.trim(),
+                insertedInShifts: false,
+                headNurseApproval: 'attesa', // attesa, si, no
+                obscured: false
             };
 
             try {
-                // Aggiunge un nuovo documento nella collezione "richieste_turni"
                 await addDoc(collection(db, "richieste_turni"), newReq);
-                
                 document.getElementById('requestForm').reset();
-                window.closeModal();
+                document.getElementById('swap-group').style.display = 'none';
+                window.closeModal('add-modal');
                 if(navigator.vibrate) navigator.vibrate(50);
             } catch (error) {
-                console.error("Errore salvataggio: ", error);
-                alert("Si è verificato un errore durante l'invio.");
+                console.error("Errore: ", error);
+                alert("Errore durante l'invio.");
             } finally {
                 btn.textContent = "INVIA RICHIESTA";
                 btn.style.opacity = "1";
             }
         };
 
-        // 3. FUNZIONE PER ELIMINARE (Rimuove da Firebase)
+        // 3. ELIMINAZIONE, OSCURAMENTO E BACKUP JSON
         window.deleteRequest = async function(id) {
-            if(confirm("Sei sicuro di voler eliminare questa richiesta?")) {
+            const pwd = prompt("Inserisci la password per eliminare definitivamente:");
+            if(pwd === "000000") {
                 try {
                     await deleteDoc(doc(db, "richieste_turni", id));
+                    window.closeModal('detail-modal');
                     if(navigator.vibrate) navigator.vibrate([30, 30]);
-                } catch (error) {
-                    console.error("Errore eliminazione: ", error);
-                }
+                } catch (error) { console.error(error); }
+            } else if (pwd !== null) {
+                alert("Password errata.");
             }
         };
 
-        // 4. RENDERING GRAFICO
+        window.obscureRequest = async function(id) {
+            if(confirm("Vuoi oscurare questa richiesta? Rimarrà traccia ma i dettagli verranno nascosti.")) {
+                try {
+                    await updateDoc(doc(db, "richieste_turni", id), { obscured: true });
+                    window.closeModal('detail-modal');
+                } catch (error) { console.error(error); }
+            }
+        };
+
+        window.downloadJSON = function() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(requests, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "richieste_118_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        };
+
+        // 4. AGGIORNAMENTO STATI (Caposala / Turni)
+        window.updateStatus = async function(id, field, value) {
+            try {
+                await updateDoc(doc(db, "richieste_turni", id), { [field]: value });
+            } catch (error) { console.error(error); }
+        };
+
+        // 5. RENDERIZZAZIONE LISTA
         window.renderRequests = function() {
             const container = document.getElementById('requests-container');
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
@@ -281,79 +458,186 @@
 
             const filtered = requests.filter(r => {
                 return r.name.toLowerCase().includes(searchTerm) || 
-                       r.notes.toLowerCase().includes(searchTerm) ||
-                       LABELS[r.type].toLowerCase().includes(searchTerm);
+                       (r.notes && r.notes.toLowerCase().includes(searchTerm)) ||
+                       LABELS[r.type].toLowerCase().includes(searchTerm) ||
+                       (r.swapWith && r.swapWith.toLowerCase().includes(searchTerm));
             });
 
             if(filtered.length === 0) {
                 container.innerHTML = `
                     <div class="empty-state">
-                        <span class="material-icons-round">inbox</span>
+                        <span class="material-icons-round">list_alt</span>
                         <h3>Nessuna richiesta</h3>
-                        <p style="font-size:0.85rem; margin-top:5px;">Le richieste inserite compariranno qui.</p>
+                        <p style="font-size:0.85rem;">Le richieste inserite compariranno qui.</p>
                     </div>`;
                 return;
             }
 
-            const groups = {};
-            filtered.forEach(r => {
-                const dateObj = new Date(r.targetDate);
-                const monthName = dateObj.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-                const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+            // Separa In Attesa (non oscurate) e le altre
+            const pendingRequests = filtered.filter(r => r.headNurseApproval === 'attesa' && !r.obscured);
+            // Ordina le in attesa per data di inizio
+            pendingRequests.sort((a,b) => new Date(a.dateFrom) - new Date(b.dateFrom));
+
+            const otherRequests = filtered.filter(r => r.headNurseApproval !== 'attesa' || r.obscured);
+
+            // FUNZIONE DI SUPPORTO PER CREARE LE RIGHE HTML
+            const generateRowHtml = (r) => {
+                const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                const dTo = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                const dateStr = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
                 
-                if(!groups[capitalizedMonth]) groups[capitalizedMonth] = [];
-                groups[capitalizedMonth].push(r);
-            });
-
-            for (const [month, reqList] of Object.entries(groups)) {
-                let monthHtml = `
-                    <div class="month-group">
-                        <div class="month-header">
-                            <span class="material-icons-round" style="font-size:16px">calendar_month</span> ${month}
-                        </div>
-                `;
-
-                reqList.forEach(r => {
-                    const targetD = new Date(r.targetDate).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                    const sentD = new Date(r.timestamp);
-                    const sentStr = `Inviata il ${sentD.toLocaleDateString('it-IT')} alle ${sentD.toLocaleTimeString('it-IT', {hour: '2-digit', minute:'2-digit'})}`;
-
-                    monthHtml += `
-                        <div class="request-card">
-                            <div class="req-header">
-                                <div class="req-user"><span class="material-icons-round" style="font-size:18px;color:var(--primary)">person</span> ${r.name}</div>
-                                <div class="req-date-target">${targetD}</div>
+                if(r.obscured) {
+                    return `
+                        <div class="list-row row-obscured">
+                            <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:20px">visibility_off</span></div>
+                            <div class="row-content">
+                                <div class="row-title">Richiesta oscurata</div>
+                                <div class="row-subtitle">Traccia mantenuta</div>
                             </div>
-                            <div class="req-type-badge type-${r.type}">
-                                <span class="material-icons-round" style="font-size:14px">${ICONS[r.type]}</span>
-                                ${LABELS[r.type]}
-                            </div>
-                            <div class="req-notes">${r.notes}</div>
-                            <div class="req-timestamp">${sentStr}</div>
-                            <button class="btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>
+                            <div class="row-date">${dateStr}</div>
                         </div>
                     `;
+                }
+
+                const bgClass = COLORS[r.type] || "bg-default";
+                const iconName = ICONS[r.type] || "assignment";
+                
+                // Determina la classe dinamica della riga (Lampeggiante per attesa, verde per confermata, rosso per rifiutata)
+                let rowClass = "";
+                if(r.headNurseApproval === 'attesa') rowClass = "row-pending";
+                else if(r.headNurseApproval === 'si') rowClass = "row-confirmed";
+                else if(r.headNurseApproval === 'no') rowClass = "row-rejected";
+
+                let statusHtml = '';
+                if(r.insertedInShifts) statusHtml += `<div class="status-dot status-green" title="Inserita nei turni"></div>`;
+                if(r.headNurseApproval === 'si') statusHtml += `<div class="status-dot status-green" title="Approvata"></div>`;
+                else if(r.headNurseApproval === 'no') statusHtml += `<div class="status-dot status-red" title="Rifiutata"></div>`;
+                else statusHtml += `<div class="status-dot status-gray" title="In attesa"></div>`;
+
+                let subTitleText = `${LABELS[r.type]} • ${r.effectiveDays} gg`;
+                if(r.swapWith) subTitleText += ` (con ${r.swapWith})`;
+
+                return `
+                    <div class="list-row ${rowClass}" onclick="window.openDetailModal('${r.id}')">
+                        <div class="row-icon ${bgClass}">
+                            <span class="material-icons-round" style="font-size:20px">${iconName}</span>
+                        </div>
+                        <div class="row-content">
+                            <div class="row-title">${r.name}</div>
+                            <div class="row-subtitle">${subTitleText}</div>
+                        </div>
+                        <div class="row-status">
+                            <div class="row-date">${dateStr}</div>
+                            <div style="display:flex; gap:4px; margin-top:4px;">${statusHtml}</div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // RENDERIZZA RICHIESTE IN ATTESA
+            if(pendingRequests.length > 0) {
+                let pendingHtml = `<div class="section-title">In Attesa di Approvazione</div><div class="month-group">`;
+                pendingRequests.forEach(r => { pendingHtml += generateRowHtml(r); });
+                pendingHtml += `</div>`;
+                container.innerHTML += pendingHtml;
+            }
+
+            // RENDERIZZA LE ALTRE (RAGGRUPPATE PER MESE)
+            if(otherRequests.length > 0) {
+                container.innerHTML += `<div class="section-title">Storico e Confermate</div>`;
+                const groups = {};
+                otherRequests.forEach(r => {
+                    const dateObj = new Date(r.dateFrom);
+                    const monthName = dateObj.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+                    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+                    
+                    if(!groups[capitalizedMonth]) groups[capitalizedMonth] = [];
+                    groups[capitalizedMonth].push(r);
                 });
-                monthHtml += `</div>`;
-                container.innerHTML += monthHtml;
+
+                for (const [month, reqList] of Object.entries(groups)) {
+                    let monthHtml = `
+                        <div class="month-group">
+                            <div class="month-header">
+                                <span class="material-icons-round" style="font-size:18px">calendar_month</span> ${month}
+                            </div>
+                    `;
+                    reqList.forEach(r => { monthHtml += generateRowHtml(r); });
+                    monthHtml += `</div>`;
+                    container.innerHTML += monthHtml;
+                }
             }
         }
 
-        // 5. GESTIONE MODALE
-        window.openModal = function() {
+        // 6. GESTIONE MODALI
+        window.openAddModal = function() {
             if(navigator.vibrate) navigator.vibrate(20);
             const m = document.getElementById('add-modal');
             m.style.display = 'flex';
-            document.getElementById('reqDate').min = new Date().toISOString().split("T")[0];
             setTimeout(() => m.classList.add('open'), 10);
         }
 
-        window.closeModal = function(e) {
+        window.openDetailModal = function(id) {
+            const r = requests.find(x => x.id === id);
+            if(!r) return;
+
+            const m = document.getElementById('detail-modal');
+            const content = document.getElementById('detail-content');
+            
+            const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT');
+            const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
+            const sent = new Date(r.timestamp).toLocaleString('it-IT');
+
+            let detailHtml = `
+                <div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
+                <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>
+            `;
+
+            if(r.swapWith) {
+                detailHtml += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
+            }
+
+            detailHtml += `
+                <div class="detail-item"><div class="detail-label">Periodo</div><div class="detail-value">Dal ${dFrom} al ${dTo}</div></div>
+                <div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>
+                <div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "Nessuna nota inserita."}</div></div>
+                <div class="detail-item"><div class="detail-label">Data Inserimento</div><div class="detail-value" style="font-size:0.85rem;font-weight:400">${sent}</div></div>
+                
+                <div class="admin-controls">
+                    <h4>Gestione Turni & Approvazione</h4>
+                    <label class="checkbox-wrapper">
+                        <input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)">
+                        Inserita nei turni
+                    </label>
+                    <div style="margin-top: 10px;">
+                        <div class="detail-label" style="margin-bottom:6px">Approvazione Caposala</div>
+                        <select class="form-control" onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                            <option value="attesa" ${r.headNurseApproval === 'attesa' ? 'selected' : ''}>In Attesa</option>
+                            <option value="si" ${r.headNurseApproval === 'si' ? 'selected' : ''}>Sì, Approvato</option>
+                            <option value="no" ${r.headNurseApproval === 'no' ? 'selected' : ''}>No, Rifiutato</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Oscura</button>
+                    <button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>
+                </div>
+            `;
+
+            content.innerHTML = detailHtml;
+
+            m.style.display = 'flex';
+            setTimeout(() => m.classList.add('open'), 10);
+        }
+
+        window.closeModal = function(modalId, e) {
             if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById('add-modal');
+            const m = document.getElementById(modalId);
             m.classList.remove('open');
             setTimeout(() => m.style.display = 'none', 300);
         }
+
     </script>
 </body>
 </html>
