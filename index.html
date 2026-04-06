@@ -381,7 +381,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMX2ycf_6P3AcBvarVX4XNKbdposkuqgE",
@@ -420,7 +420,6 @@
         };
 
         // --- GESTIONE NOTE MIGLIORATIVE ---
-        // Ascolta la collezione delle note
         onSnapshot(query(collection(db, "note_migliorative"), orderBy("timestamp", "desc")), (snapshot) => {
             savedNotes = [];
             snapshot.forEach(doc => savedNotes.push({ id: doc.id, ...doc.data() }));
@@ -440,7 +439,6 @@
                 const dateObj = n.timestamp ? new Date(n.timestamp) : new Date();
                 const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
                 
-                // Bottone elimina visibile solo agli admin
                 const deleteBtn = window.isAdmin ? `<span class="material-icons-round" style="font-size:16px; color:#ef4444; cursor:pointer;" onclick="window.deleteNote('${n.id}')" title="Elimina">delete</span>` : '';
 
                 container.innerHTML += `
@@ -467,13 +465,12 @@
             btn.textContent = "AGGIUNTA IN CORSO...";
             
             try {
-                // Aggiunge un nuovo documento alla collezione invece di sovrascrivere
                 await addDoc(collection(db, "note_migliorative"), { 
                     testo: text,
                     timestamp: new Date().toISOString()
                 });
                 
-                document.getElementById('appNotesText').value = ""; // Svuota l'input
+                document.getElementById('appNotesText').value = ""; 
                 btn.textContent = "AGGIUNTO CON SUCCESSO!";
                 setTimeout(() => btn.textContent = originalText, 1500);
             } catch(e) {
@@ -545,7 +542,8 @@
             }
         });
 
-        onSnapshot(query(collection(db, "richieste_turni"), orderBy("dateFrom", "desc")), (snapshot) => {
+        // ORDINAMENTO DAL DATABASE PER TIMESTAMP DI INSERIMENTO
+        onSnapshot(query(collection(db, "richieste_turni"), orderBy("timestamp", "desc")), (snapshot) => {
             requests = []; snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
             window.renderRequests();
         });
@@ -625,7 +623,7 @@
                 } else if(pwd !== null) { alert("Password errata."); }
             }
             window.renderRequests();
-            window.renderNotes(); // Aggiorna anche le note per mostrare i pulsanti "Elimina"
+            window.renderNotes(); 
         };
 
         window.deleteRequest = async function(id) {
@@ -654,6 +652,21 @@
                     updateData.insertedAt = value ? new Date().toISOString() : null;
                 }
                 await updateDoc(doc(db, "richieste_turni", id), updateData);
+                
+                if (document.getElementById('detail-modal').classList.contains('open')) {
+                    setTimeout(() => window.openDetailModal(id), 200); 
+                }
+            } catch (error) { console.error(error); }
+        };
+
+        // --- NUOVA FUNZIONE PER AGGIORNARE LA DATA DI INVIO (TIMESTAMP) ---
+        window.updateSubmissionDate = async function(id, value) {
+            if(!value) return;
+            try {
+                const newDate = new Date(value).toISOString();
+                // Aggiorna il timestamp nel database. 
+                // Firebase si accorgerà della modifica e sposterà l'elemento nella lista automaticamente
+                await updateDoc(doc(db, "richieste_turni", id), { timestamp: newDate });
                 
                 if (document.getElementById('detail-modal').classList.contains('open')) {
                     setTimeout(() => window.openDetailModal(id), 200); 
@@ -691,8 +704,9 @@
             }
 
             const isPending = (r) => !r.obscured && ((APPROVAL_TYPES.includes(r.type) && r.headNurseApproval === 'attesa') || (!APPROVAL_TYPES.includes(r.type) && !r.insertedInShifts));
-            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(b.dateFrom) - new Date(a.dateFrom));
-            const otherRequests = filtered.filter(r => !isPending(r)).sort((a,b) => new Date(b.dateFrom) - new Date(a.dateFrom));
+            
+            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const otherRequests = filtered.filter(r => !isPending(r)).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             const generateRow = (r) => {
                 const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -779,7 +793,7 @@
                 const groupKeys = [];
                 
                 otherRequests.forEach(r => {
-                    const m = new Date(r.dateFrom).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+                    const m = new Date(r.timestamp).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
                     const cap = m.charAt(0).toUpperCase() + m.slice(1);
                     if(!groups[cap]) {
                         groups[cap] = [];
@@ -789,7 +803,7 @@
                 });
                 
                 for (const month of groupKeys) {
-                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:16px">calendar_month</span> ${month}</div>${groups[month].map(generateRow).join('')}</div>`;
+                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:16px">calendar_month</span> Inserite a: ${month}</div>${groups[month].map(generateRow).join('')}</div>`;
                 }
             }
         };
@@ -809,12 +823,30 @@
             const r = requests.find(x => x.id === id);
             if(!r || (r.obscured && !window.isAdmin)) return; 
 
+            // Costruisci il formato giusto per l'input datetime-local (Timestamp di Invio)
+            let localTimestamp = "";
+            if (r.timestamp) {
+                const d = new Date(r.timestamp);
+                const pad = (n) => n.toString().padStart(2, '0');
+                localTimestamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+            }
+
             let html = ``;
             
-            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                        <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
-                        <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
-                     </div>`;
+            // PRIMO BLOCCO: SE ADMIN, MOSTRA INPUT EDITABILE, ALTRIMENTI TESTO NORMALE
+            if (window.isAdmin) {
+                html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                            <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta <span style="color:#ef4444; font-weight:800;">(MODIFICABILE)</span></div>
+                            <input type="datetime-local" class="form-control" style="padding: 6px 10px; font-size: 0.85rem; margin-top: 6px; border-color: var(--primary);"
+                                   value="${localTimestamp}"
+                                   onchange="window.updateSubmissionDate('${r.id}', this.value)">
+                         </div>`;
+            } else {
+                html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                            <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
+                            <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
+                         </div>`;
+            }
 
             html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
                         <div class="detail-label" style="color: var(--primary);">Stato Inserimento Turni</div>
