@@ -33,11 +33,12 @@
         }
         .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
         .header-left { display: flex; align-items: center; gap: 15px; }
+        .header-right { display: flex; align-items: center; gap: 10px; }
         .btn-back, .btn-icon {
             background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
             color: white; width: 40px; height: 40px; border-radius: 12px; display: flex;
             align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px);
-            text-decoration: none;
+            text-decoration: none; transition: 0.2s;
         }
         .btn-back:active, .btn-icon:active { transform: scale(0.92); }
         .page-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px; }
@@ -72,15 +73,14 @@
         }
         .list-row:last-child { border-bottom: none; }
         
-        /* ANIMAZIONI E SFONDI STATO */
         @keyframes flashPending {
             0% { background-color: #ffffff; }
-            50% { background-color: #fef9c3; /* Giallino molto chiaro */ }
+            50% { background-color: #fef9c3; }
             100% { background-color: #ffffff; }
         }
         .row-pending { animation: flashPending 2.5s infinite ease-in-out; }
-        .row-confirmed { background-color: #dcfce7 !important; /* Verdino chiaro */ }
-        .row-rejected { background-color: #fee2e2 !important; /* Rossino chiaro */ }
+        .row-confirmed { background-color: #dcfce7 !important; }
+        .row-rejected { background-color: #fee2e2 !important; }
 
         .row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .row-content { flex: 1; min-width: 0; }
@@ -94,7 +94,7 @@
         .status-red { background: #ef4444; }
         .status-gray { background: #cbd5e1; }
 
-        .row-obscured { opacity: 0.6; background: #f8fafc !important; animation: none; }
+        .row-obscured { opacity: 0.5; background: #f8fafc !important; animation: none; }
         .row-obscured .row-title { text-decoration: line-through; color: var(--text-sec); }
 
         .empty-state { text-align: center; padding: 40px 20px; color: var(--text-sec); }
@@ -147,7 +147,6 @@
         }
         .btn-submit:active { transform: scale(0.97); }
 
-        /* Dettagli Modal Stili */
         .detail-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
         .detail-item:last-child { border-bottom: none; }
         .detail-label { font-size: 0.75rem; color: var(--text-sec); font-weight: 700; text-transform: uppercase; }
@@ -159,11 +158,11 @@
         .checkbox-wrapper input { width: 18px; height: 18px; }
         
         .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; }
-        .btn-hide { background: #f59e0b; color: white; }
-        .btn-delete { background: #ef4444; color: white; }
+        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; color: white; }
+        .btn-hide { background: #f59e0b; }
+        .btn-delete { background: #ef4444; }
+        .btn-restore { background: #10b981; }
 
-        /* Colori dinamici per tipi */
         .bg-copertura { background: #e0e7ff; color: #4338ca; }
         .bg-ferie { background: #ffedd5; color: #c2410c; }
         .bg-ferie-prec { background: #ffedd5; color: #9a3412; }
@@ -184,9 +183,14 @@
                 <a href="area_autisti.html" class="btn-back"><span class="material-icons-round">arrow_back</span></a>
                 <div class="page-title">Gestione Richieste</div>
             </div>
-            <button class="btn-icon" onclick="window.downloadJSON()" title="Scarica Backup JSON">
-                <span class="material-icons-round">download</span>
-            </button>
+            <div class="header-right">
+                <button class="btn-icon" onclick="window.toggleAdmin()" title="Accesso Admin" id="adminBtn">
+                    <span class="material-icons-round" id="adminIcon">admin_panel_settings</span>
+                </button>
+                <button class="btn-icon" onclick="window.downloadJSON()" title="Scarica Backup JSON">
+                    <span class="material-icons-round">download</span>
+                </button>
+            </div>
         </div>
         <div class="search-container">
             <span class="material-icons-round">search</span>
@@ -194,8 +198,7 @@
         </div>
     </header>
 
-    <main id="requests-container">
-        </main>
+    <main id="requests-container"></main>
 
     <button class="fab" onclick="window.openAddModal()">
         <span class="material-icons-round">add</span>
@@ -256,20 +259,31 @@
                     </select>
                 </div>
 
+                <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:12px; border:1px solid #c7d2fe;">
+                    <label style="color:#4338ca">Fascia di Reperibilità</label>
+                    <select id="reqTimeSlot" class="form-control">
+                        <option value="" disabled selected>Seleziona orario...</option>
+                        <option value="13:00/20:00">13:00 - 20:00</option>
+                        <option value="20:00/00:00">20:00 - 00:00</option>
+                        <option value="00:00/07:00">00:00 - 07:00</option>
+                        <option value="07:00/13:00">07:00 - 13:00</option>
+                    </select>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label>Dal Giorno</label>
+                        <label id="labelDateFrom">Dal Giorno</label>
                         <input type="date" id="reqDateFrom" class="form-control" required>
                     </div>
-                    <div class="form-group">
-                        <label>Al Giorno</label>
-                        <input type="date" id="reqDateTo" class="form-control" required>
+                    <div class="form-group" id="date-to-group">
+                        <label>Al Giorno <span style="text-transform:none;font-weight:400;color:#94a3b8">(opzionale)</span></label>
+                        <input type="date" id="reqDateTo" class="form-control">
                     </div>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group" id="days-group">
                     <label>Giorni effettivi di assenza</label>
-                    <input type="number" step="0.5" id="reqDays" class="form-control" placeholder="Es. 1 o 0.5" required>
+                    <input type="number" step="0.5" id="reqDays" class="form-control" placeholder="Es. 1 o 0.5 (Default: 1)">
                 </div>
 
                 <div class="form-group">
@@ -288,9 +302,7 @@
                 <h3>Dettaglio Richiesta</h3>
                 <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('detail-modal')">close</span>
             </div>
-            
-            <div id="detail-content">
-                </div>
+            <div id="detail-content"></div>
         </div>
     </div>
 
@@ -304,340 +316,288 @@
             projectId: "area-personale-autsocc-118-rsm",
             storageBucket: "area-personale-autsocc-118-rsm.firebasestorage.app",
             messagingSenderId: "910283994567",
-            appId: "1:910283994567:web:d9c45b5f4b5a83b92595e2",
-            measurementId: "G-9P8X82Y4H5"
+            appId: "1:910283994567:web:d9c45b5f4b5a83b92595e2"
         };
 
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
+        window.isAdmin = false;
         let requests = []; 
+
+        const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore'];
 
         const LABELS = { 
             "copertura_reperibilita": "Copertura Reperibilità",
-            "ferie": "Ferie", 
-            "ferie_anno_prec": "Ferie Anno Prec.",
-            "permesso_ore": "Permesso Ore",
-            "permesso": "Permesso",
-            "cambio_reperibilita": "Cambio Reperibilità",
-            "cambio_turno": "Cambio Turno",
+            "ferie": "Ferie", "ferie_anno_prec": "Ferie Anno Prec.",
+            "permesso_ore": "Permesso Ore", "permesso": "Permesso",
+            "cambio_reperibilita": "Cambio Reperibilità", "cambio_turno": "Cambio Turno",
             "recupero_ore": "Recupero Ore"
         };
-
         const ICONS = { 
-            "copertura_reperibilita": "shield",
-            "ferie": "beach_access", 
-            "ferie_anno_prec": "history",
-            "permesso_ore": "schedule",
-            "permesso": "timer",
-            "cambio_reperibilita": "swap_calls",
-            "cambio_turno": "swap_horiz",
-            "recupero_ore": "hourglass_empty"
+            "copertura_reperibilita": "shield", "ferie": "beach_access", "ferie_anno_prec": "history",
+            "permesso_ore": "schedule", "permesso": "timer", "cambio_reperibilita": "swap_calls",
+            "cambio_turno": "swap_horiz", "recupero_ore": "hourglass_empty"
         };
-
         const COLORS = {
-            "copertura_reperibilita": "bg-copertura",
-            "ferie": "bg-ferie", 
-            "ferie_anno_prec": "bg-ferie-prec",
-            "permesso_ore": "bg-permesso-ore",
-            "permesso": "bg-permesso",
-            "cambio_reperibilita": "bg-cambio-rep",
-            "cambio_turno": "bg-cambio-turno",
-            "recupero_ore": "bg-recupero"
+            "copertura_reperibilita": "bg-copertura", "ferie": "bg-ferie", "ferie_anno_prec": "bg-ferie-prec",
+            "permesso_ore": "bg-permesso-ore", "permesso": "bg-permesso", "cambio_reperibilita": "bg-cambio-rep",
+            "cambio_turno": "bg-cambio-turno", "recupero_ore": "bg-recupero"
         };
 
-        // GESTIONE VISIBILITÀ MENU DI CAMBIO
+        // GESTIONE VISIBILITÀ CAMPI MODULO
         document.getElementById('reqType').addEventListener('change', function(e) {
             const val = e.target.value;
             const swapGroup = document.getElementById('swap-group');
             const swapInput = document.getElementById('reqNameSwap');
-            
-            if(val === 'cambio_turno' || val === 'copertura_reperibilita') {
+            const timeSlotGroup = document.getElementById('time-slot-group');
+            const timeSlotInput = document.getElementById('reqTimeSlot');
+            const dateToGroup = document.getElementById('date-to-group');
+            const daysGroup = document.getElementById('days-group');
+            const labelDateFrom = document.getElementById('labelDateFrom');
+
+            swapGroup.style.display = 'none'; swapInput.required = false;
+            timeSlotGroup.style.display = 'none'; timeSlotInput.required = false;
+            dateToGroup.style.display = 'block'; daysGroup.style.display = 'block';
+            labelDateFrom.textContent = "Dal Giorno";
+
+            if(val === 'cambio_turno' || val === 'cambio_reperibilita' || val === 'copertura_reperibilita') {
                 swapGroup.style.display = 'block';
                 swapInput.required = true;
-            } else {
-                swapGroup.style.display = 'none';
-                swapInput.required = false;
-                swapInput.value = '';
+            }
+
+            if(val === 'copertura_reperibilita') {
+                timeSlotGroup.style.display = 'block';
+                timeSlotInput.required = true;
+                dateToGroup.style.display = 'none';
+                daysGroup.style.display = 'none';
+                labelDateFrom.textContent = "Il Giorno (Data)";
             }
         });
 
-        // 1. ASCOLTATORE FIREBASE
-        const q = query(collection(db, "richieste_turni"), orderBy("dateFrom", "desc"));
-        onSnapshot(q, (snapshot) => {
-            requests = [];
-            snapshot.forEach((doc) => {
-                requests.push({ id: doc.id, ...doc.data() });
-            });
+        // ASCOLTATORE FIREBASE
+        onSnapshot(query(collection(db, "richieste_turni"), orderBy("dateFrom", "desc")), (snapshot) => {
+            requests = []; snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
             window.renderRequests();
         });
 
-        // 2. SALVATAGGIO NUOVA RICHIESTA
+        // SALVATAGGIO
         window.saveRequest = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.textContent = "INVIO IN CORSO...";
-            btn.style.opacity = "0.7";
+            btn.textContent = "INVIO IN CORSO..."; btn.style.opacity = "0.7";
             
             const reqType = document.getElementById('reqType').value;
+            const dFrom = document.getElementById('reqDateFrom').value;
+            const dToRaw = document.getElementById('reqDateTo').value;
+            
             const newReq = {
                 timestamp: new Date().toISOString(),
                 name: document.getElementById('reqName').value,
                 type: reqType,
-                swapWith: (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita') ? document.getElementById('reqNameSwap').value : null,
-                dateFrom: document.getElementById('reqDateFrom').value,
-                dateTo: document.getElementById('reqDateTo').value,
-                effectiveDays: document.getElementById('reqDays').value,
+                swapWith: (swapGroup.style.display === 'block') ? document.getElementById('reqNameSwap').value : null,
+                timeSlot: (reqType === 'copertura_reperibilita') ? document.getElementById('reqTimeSlot').value : null,
+                dateFrom: dFrom,
+                dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
                 notes: document.getElementById('reqNotes').value.trim(),
                 insertedInShifts: false,
-                headNurseApproval: 'attesa', // attesa, si, no
+                headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
                 obscured: false
             };
 
             try {
                 await addDoc(collection(db, "richieste_turni"), newReq);
                 document.getElementById('requestForm').reset();
-                document.getElementById('swap-group').style.display = 'none';
+                document.getElementById('reqType').dispatchEvent(new Event('change')); // reset visibility
                 window.closeModal('add-modal');
                 if(navigator.vibrate) navigator.vibrate(50);
-            } catch (error) {
-                console.error("Errore: ", error);
-                alert("Errore durante l'invio.");
-            } finally {
-                btn.textContent = "INVIA RICHIESTA";
-                btn.style.opacity = "1";
-            }
+            } catch (error) { alert("Errore durante l'invio."); } 
+            finally { btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1"; }
         };
 
-        // 3. ELIMINAZIONE, OSCURAMENTO E BACKUP JSON
+        // ADMIN E AZIONI
+        window.toggleAdmin = function() {
+            if(window.isAdmin) {
+                window.isAdmin = false;
+                document.getElementById('adminIcon').style.color = "white";
+                alert("Uscito dalla modalità Admin.");
+            } else {
+                const pwd = prompt("Inserisci la password per l'accesso Admin:");
+                if(pwd === "000000") {
+                    window.isAdmin = true;
+                    document.getElementById('adminIcon').style.color = "#fde047";
+                    alert("Accesso Admin effettuato.");
+                } else if(pwd !== null) { alert("Password errata."); }
+            }
+            window.renderRequests();
+        };
+
         window.deleteRequest = async function(id) {
-            const pwd = prompt("Inserisci la password per eliminare definitivamente:");
-            if(pwd === "000000") {
-                try {
-                    await deleteDoc(doc(db, "richieste_turni", id));
-                    window.closeModal('detail-modal');
-                    if(navigator.vibrate) navigator.vibrate([30, 30]);
-                } catch (error) { console.error(error); }
-            } else if (pwd !== null) {
-                alert("Password errata.");
+            if(confirm("Vuoi eliminare definitivamente questa richiesta?")) {
+                try { await deleteDoc(doc(db, "richieste_turni", id)); window.closeModal('detail-modal'); } 
+                catch (error) { console.error(error); }
             }
         };
 
         window.obscureRequest = async function(id) {
-            if(confirm("Vuoi oscurare questa richiesta? Rimarrà traccia ma i dettagli verranno nascosti.")) {
-                try {
-                    await updateDoc(doc(db, "richieste_turni", id), { obscured: true });
-                    window.closeModal('detail-modal');
-                } catch (error) { console.error(error); }
+            if(confirm("Vuoi ritirare/oscurare questa richiesta?")) {
+                try { await updateDoc(doc(db, "richieste_turni", id), { obscured: true }); window.closeModal('detail-modal'); } 
+                catch (error) { console.error(error); }
             }
+        };
+
+        window.restoreRequest = async function(id) {
+            try { await updateDoc(doc(db, "richieste_turni", id), { obscured: false }); window.closeModal('detail-modal'); } 
+            catch (error) { console.error(error); }
+        };
+
+        window.updateStatus = async function(id, field, value) {
+            try { await updateDoc(doc(db, "richieste_turni", id), { [field]: value }); } 
+            catch (error) { console.error(error); }
         };
 
         window.downloadJSON = function() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(requests, null, 2));
-            const downloadAnchorNode = document.createElement('a');
-            downloadAnchorNode.setAttribute("href", dataStr);
-            downloadAnchorNode.setAttribute("download", "richieste_118_backup_" + new Date().toISOString().slice(0,10) + ".json");
-            document.body.appendChild(downloadAnchorNode);
-            downloadAnchorNode.click();
-            downloadAnchorNode.remove();
+            const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "richieste_118_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            document.body.appendChild(dl); dl.click(); dl.remove();
         };
 
-        // 4. AGGIORNAMENTO STATI (Caposala / Turni)
-        window.updateStatus = async function(id, field, value) {
-            try {
-                await updateDoc(doc(db, "richieste_turni", id), { [field]: value });
-            } catch (error) { console.error(error); }
-        };
-
-        // 5. RENDERIZZAZIONE LISTA
+        // RENDER LISTA
         window.renderRequests = function() {
             const container = document.getElementById('requests-container');
-            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-            
+            const search = document.getElementById('searchInput').value.toLowerCase();
             container.innerHTML = "";
 
-            const filtered = requests.filter(r => {
-                return r.name.toLowerCase().includes(searchTerm) || 
-                       (r.notes && r.notes.toLowerCase().includes(searchTerm)) ||
-                       LABELS[r.type].toLowerCase().includes(searchTerm) ||
-                       (r.swapWith && r.swapWith.toLowerCase().includes(searchTerm));
-            });
+            const filtered = requests.filter(r => r.name.toLowerCase().includes(search) || LABELS[r.type].toLowerCase().includes(search));
 
             if(filtered.length === 0) {
-                container.innerHTML = `
-                    <div class="empty-state">
-                        <span class="material-icons-round">list_alt</span>
-                        <h3>Nessuna richiesta</h3>
-                        <p style="font-size:0.85rem;">Le richieste inserite compariranno qui.</p>
-                    </div>`;
-                return;
+                container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>Nessuna richiesta</h3></div>`; return;
             }
 
-            // Separa In Attesa (non oscurate) e le altre
-            const pendingRequests = filtered.filter(r => r.headNurseApproval === 'attesa' && !r.obscured);
-            // Ordina le in attesa per data di inizio
-            pendingRequests.sort((a,b) => new Date(a.dateFrom) - new Date(b.dateFrom));
+            const isPending = (r) => !r.obscured && ((APPROVAL_TYPES.includes(r.type) && r.headNurseApproval === 'attesa') || (!APPROVAL_TYPES.includes(r.type) && !r.insertedInShifts));
+            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(a.dateFrom) - new Date(b.dateFrom));
+            const otherRequests = filtered.filter(r => !isPending(r));
 
-            const otherRequests = filtered.filter(r => r.headNurseApproval !== 'attesa' || r.obscured);
-
-            // FUNZIONE DI SUPPORTO PER CREARE LE RIGHE HTML
-            const generateRowHtml = (r) => {
+            const generateRow = (r) => {
                 const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
                 const dTo = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
                 const dateStr = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
                 
                 if(r.obscured) {
-                    return `
-                        <div class="list-row row-obscured">
-                            <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:20px">visibility_off</span></div>
-                            <div class="row-content">
-                                <div class="row-title">Richiesta oscurata</div>
-                                <div class="row-subtitle">Traccia mantenuta</div>
-                            </div>
-                            <div class="row-date">${dateStr}</div>
-                        </div>
-                    `;
+                    if(!window.isAdmin) return `<div class="list-row row-obscured"><div class="row-icon bg-default"><span class="material-icons-round">visibility_off</span></div><div class="row-content"><div class="row-title">Richiesta oscurata</div><div class="row-subtitle">Traccia mantenuta</div></div><div class="row-date">${dateStr}</div></div>`;
                 }
 
-                const bgClass = COLORS[r.type] || "bg-default";
-                const iconName = ICONS[r.type] || "assignment";
-                
-                // Determina la classe dinamica della riga (Lampeggiante per attesa, verde per confermata, rosso per rifiutata)
-                let rowClass = "";
-                if(r.headNurseApproval === 'attesa') rowClass = "row-pending";
-                else if(r.headNurseApproval === 'si') rowClass = "row-confirmed";
-                else if(r.headNurseApproval === 'no') rowClass = "row-rejected";
+                let rowClass = r.obscured ? "row-obscured" : "";
+                if(!r.obscured) {
+                    if(APPROVAL_TYPES.includes(r.type)) {
+                        if(r.headNurseApproval === 'attesa') rowClass = "row-pending";
+                        else if(r.headNurseApproval === 'si') rowClass = "row-confirmed";
+                        else if(r.headNurseApproval === 'no') rowClass = "row-rejected";
+                    } else if(r.insertedInShifts) { rowClass = "row-confirmed"; }
+                }
 
                 let statusHtml = '';
                 if(r.insertedInShifts) statusHtml += `<div class="status-dot status-green" title="Inserita nei turni"></div>`;
-                if(r.headNurseApproval === 'si') statusHtml += `<div class="status-dot status-green" title="Approvata"></div>`;
-                else if(r.headNurseApproval === 'no') statusHtml += `<div class="status-dot status-red" title="Rifiutata"></div>`;
-                else statusHtml += `<div class="status-dot status-gray" title="In attesa"></div>`;
+                if(APPROVAL_TYPES.includes(r.type)) {
+                    if(r.headNurseApproval === 'si') statusHtml += `<div class="status-dot status-green" title="Approvata"></div>`;
+                    else if(r.headNurseApproval === 'no') statusHtml += `<div class="status-dot status-red" title="Rifiutata"></div>`;
+                    else statusHtml += `<div class="status-dot status-gray" title="In attesa"></div>`;
+                }
 
-                let subTitleText = `${LABELS[r.type]} • ${r.effectiveDays} gg`;
-                if(r.swapWith) subTitleText += ` (con ${r.swapWith})`;
+                let subTitle = r.type === 'copertura_reperibilita' ? `${LABELS[r.type]} ${r.timeSlot}` : `${LABELS[r.type]} • ${r.effectiveDays} gg`;
+                if(r.swapWith) subTitle += ` (con ${r.swapWith})`;
+                const adminTag = (r.obscured && window.isAdmin) ? `<span style="color:#ef4444;font-size:0.7rem">[OSCURATA]</span> ` : '';
 
                 return `
                     <div class="list-row ${rowClass}" onclick="window.openDetailModal('${r.id}')">
-                        <div class="row-icon ${bgClass}">
-                            <span class="material-icons-round" style="font-size:20px">${iconName}</span>
-                        </div>
-                        <div class="row-content">
-                            <div class="row-title">${r.name}</div>
-                            <div class="row-subtitle">${subTitleText}</div>
-                        </div>
-                        <div class="row-status">
-                            <div class="row-date">${dateStr}</div>
-                            <div style="display:flex; gap:4px; margin-top:4px;">${statusHtml}</div>
-                        </div>
-                    </div>
-                `;
+                        <div class="row-icon ${COLORS[r.type] || "bg-default"}"><span class="material-icons-round" style="font-size:20px">${ICONS[r.type]}</span></div>
+                        <div class="row-content"><div class="row-title">${adminTag}${r.name}</div><div class="row-subtitle">${subTitle}</div></div>
+                        <div class="row-status"><div class="row-date">${dateStr}</div><div style="display:flex; gap:4px; margin-top:4px;">${statusHtml}</div></div>
+                    </div>`;
             };
 
-            // RENDERIZZA RICHIESTE IN ATTESA
             if(pendingRequests.length > 0) {
-                let pendingHtml = `<div class="section-title">In Attesa di Approvazione</div><div class="month-group">`;
-                pendingRequests.forEach(r => { pendingHtml += generateRowHtml(r); });
-                pendingHtml += `</div>`;
-                container.innerHTML += pendingHtml;
+                container.innerHTML += `<div class="section-title">In Attesa d'Azione</div><div class="month-group">${pendingRequests.map(generateRow).join('')}</div>`;
             }
 
-            // RENDERIZZA LE ALTRE (RAGGRUPPATE PER MESE)
             if(otherRequests.length > 0) {
                 container.innerHTML += `<div class="section-title">Storico e Confermate</div>`;
                 const groups = {};
                 otherRequests.forEach(r => {
-                    const dateObj = new Date(r.dateFrom);
-                    const monthName = dateObj.toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
-                    const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
-                    
-                    if(!groups[capitalizedMonth]) groups[capitalizedMonth] = [];
-                    groups[capitalizedMonth].push(r);
+                    const m = new Date(r.dateFrom).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+                    const cap = m.charAt(0).toUpperCase() + m.slice(1);
+                    if(!groups[cap]) groups[cap] = [];
+                    groups[cap].push(r);
                 });
-
-                for (const [month, reqList] of Object.entries(groups)) {
-                    let monthHtml = `
-                        <div class="month-group">
-                            <div class="month-header">
-                                <span class="material-icons-round" style="font-size:18px">calendar_month</span> ${month}
-                            </div>
-                    `;
-                    reqList.forEach(r => { monthHtml += generateRowHtml(r); });
-                    monthHtml += `</div>`;
-                    container.innerHTML += monthHtml;
+                for (const [month, list] of Object.entries(groups)) {
+                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:18px">calendar_month</span> ${month}</div>${list.map(generateRow).join('')}</div>`;
                 }
             }
-        }
+        };
 
-        // 6. GESTIONE MODALI
+        // GESTIONE MODALI
         window.openAddModal = function() {
-            if(navigator.vibrate) navigator.vibrate(20);
-            const m = document.getElementById('add-modal');
-            m.style.display = 'flex';
-            setTimeout(() => m.classList.add('open'), 10);
+            document.getElementById('add-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('add-modal').classList.add('open'), 10);
         }
 
         window.openDetailModal = function(id) {
             const r = requests.find(x => x.id === id);
-            if(!r) return;
+            if(!r || (r.obscured && !window.isAdmin)) return; // Se oscurata e non admin, non si apre il dettaglio
 
-            const m = document.getElementById('detail-modal');
-            const content = document.getElementById('detail-content');
+            let html = `<div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
+                        <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>`;
+
+            if(r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
+            if(r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fascia Oraria</div><div class="detail-value">${r.timeSlot}</div></div>`;
             
             const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT');
             const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
-            const sent = new Date(r.timestamp).toLocaleString('it-IT');
+            html += `<div class="detail-item"><div class="detail-label">Periodo</div><div class="detail-value">${r.type === 'copertura_reperibilita' || dFrom === dTo ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo}</div></div>`;
+            
+            if(r.type !== 'copertura_reperibilita') html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
+            
+            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>
+                     <div class="detail-item"><div class="detail-label">Data Inserimento</div><div class="detail-value" style="font-size:0.85rem;font-weight:400">${new Date(r.timestamp).toLocaleString('it-IT')}</div></div>`;
 
-            let detailHtml = `
-                <div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
-                <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>
-            `;
-
-            if(r.swapWith) {
-                detailHtml += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
-            }
-
-            detailHtml += `
-                <div class="detail-item"><div class="detail-label">Periodo</div><div class="detail-value">Dal ${dFrom} al ${dTo}</div></div>
-                <div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>
-                <div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "Nessuna nota inserita."}</div></div>
-                <div class="detail-item"><div class="detail-label">Data Inserimento</div><div class="detail-value" style="font-size:0.85rem;font-weight:400">${sent}</div></div>
-                
-                <div class="admin-controls">
-                    <h4>Gestione Turni & Approvazione</h4>
-                    <label class="checkbox-wrapper">
-                        <input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)">
-                        Inserita nei turni
-                    </label>
-                    <div style="margin-top: 10px;">
-                        <div class="detail-label" style="margin-bottom:6px">Approvazione Caposala</div>
+            html += `<div class="admin-controls"><h4>Gestione Turni</h4>
+                        <label class="checkbox-wrapper"><input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)"> Inserita nei turni</label>`;
+            
+            if (APPROVAL_TYPES.includes(r.type)) {
+                html += `<div style="margin-top: 10px;"><div class="detail-label" style="margin-bottom:6px">Approvazione Caposala</div>
                         <select class="form-control" onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
                             <option value="attesa" ${r.headNurseApproval === 'attesa' ? 'selected' : ''}>In Attesa</option>
                             <option value="si" ${r.headNurseApproval === 'si' ? 'selected' : ''}>Sì, Approvato</option>
                             <option value="no" ${r.headNurseApproval === 'no' ? 'selected' : ''}>No, Rifiutato</option>
-                        </select>
-                    </div>
-                </div>
+                        </select></div>`;
+            }
+            html += `</div>`;
 
-                <div class="action-buttons">
-                    <button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Oscura</button>
-                    <button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>
-                </div>
-            `;
+            // Bottoni Azione (Oscura, Elimina, Ripristina)
+            html += `<div class="action-buttons">`;
+            if(r.obscured) {
+                if(window.isAdmin) {
+                    html += `<button class="btn-action btn-restore" onclick="window.restoreRequest('${r.id}')">Ripristina</button>`;
+                    html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                }
+            } else {
+                html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira / Oscura</button>`;
+                if(window.isAdmin) html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+            }
+            html += `</div>`;
 
-            content.innerHTML = detailHtml;
-
-            m.style.display = 'flex';
-            setTimeout(() => m.classList.add('open'), 10);
+            document.getElementById('detail-content').innerHTML = html;
+            document.getElementById('detail-modal').style.display = 'flex';
+            setTimeout(() => document.getElementById('detail-modal').classList.add('open'), 10);
         }
 
-        window.closeModal = function(modalId, e) {
+        window.closeModal = function(id, e) {
             if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById(modalId);
-            m.classList.remove('open');
-            setTimeout(() => m.style.display = 'none', 300);
+            const m = document.getElementById(id);
+            m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300);
         }
-
     </script>
 </body>
 </html>
