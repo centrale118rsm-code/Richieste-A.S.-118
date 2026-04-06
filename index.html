@@ -22,52 +22,67 @@
             --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         }
 
-        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; }
+        body { background-color: var(--bg); color: var(--text-main); min-height: 100vh; display: flex; flex-direction: column; overflow-x: hidden; }
 
         /* --- HEADER --- */
         header {
             background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #2563eb 100%);
-            padding: calc(env(safe-area-inset-top) + 20px) 20px 20px;
-            color: white; border-radius: 0 0 24px 24px; box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: calc(env(safe-area-inset-top) + 20px) 20px 15px;
+            color: white; border-radius: 0 0 20px 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             position: sticky; top: 0; z-index: 100;
         }
-        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; }
-        .header-left { display: flex; align-items: center; gap: 15px; }
-        .header-right { display: flex; align-items: center; gap: 10px; }
+        .header-top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .header-left { display: flex; align-items: center; gap: 12px; }
+        .header-right { display: flex; align-items: center; gap: 8px; }
         .btn-back, .btn-icon {
             background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
-            color: white; width: 40px; height: 40px; border-radius: 12px; display: flex;
+            color: white; width: 36px; height: 36px; border-radius: 10px; display: flex;
             align-items: center; justify-content: center; cursor: pointer; backdrop-filter: blur(5px);
             text-decoration: none; transition: 0.2s;
         }
+        .btn-icon.notes-btn { color: #fde047; }
         .btn-back:active, .btn-icon:active { transform: scale(0.92); }
-        .page-title { font-size: 1.4rem; font-weight: 900; letter-spacing: -0.5px; }
+        .page-title { font-size: 1.2rem; font-weight: 900; letter-spacing: -0.5px; }
 
         /* --- SEARCH BAR --- */
-        .search-container { position: relative; width: 100%; }
+        .search-container { position: relative; width: 100%; transition: 0.3s; }
         .search-container input {
-            width: 100%; padding: 12px 16px 12px 44px; border-radius: 12px;
+            width: 100%; padding: 10px 14px 10px 38px; border-radius: 10px;
             border: none; background: rgba(255,255,255,0.2); color: white;
-            font-size: 0.95rem; font-weight: 500; backdrop-filter: blur(5px);
+            font-size: 0.9rem; font-weight: 500; backdrop-filter: blur(5px);
         }
         .search-container input::placeholder { color: rgba(255,255,255,0.7); }
         .search-container input:focus { background: rgba(255,255,255,0.3); outline: none; }
-        .search-container .material-icons-round { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: rgba(255,255,255,0.8); }
+        .search-container .material-icons-round { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 20px; color: rgba(255,255,255,0.8); }
+
+        /* --- ADMIN TABS --- */
+        .admin-tabs { display: flex; gap: 8px; margin-top: 12px; }
+        .admin-tab { 
+            flex: 1; text-align: center; padding: 10px 8px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
+            border-radius: 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); 
+            cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;
+        }
+        .admin-tab.active { background: #fff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         /* --- MAIN CONTENT (LISTA) --- */
-        main { padding: 10px 20px; flex: 1; overflow-y: auto; padding-bottom: 100px; }
+        #requests-container { padding: 10px 15px; flex: 1; overflow-y: auto; padding-bottom: 100px; display: block; }
         
-        .section-title { font-size: 0.85rem; font-weight: 800; color: var(--text-sec); text-transform: uppercase; letter-spacing: 1px; margin: 20px 0 10px 5px; }
-        .month-group { margin-bottom: 24px; background: var(--bg-card); border-radius: 16px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+        /* --- MAIN CONTENT (IFRAME TURNI) --- */
+        #turni-container { display: none; flex: 1; padding: 0; background: #fff; }
+        #turni-container iframe { width: 100%; height: 100%; min-height: calc(100vh - 150px); border: none; display: block; }
+        
+        .section-title { font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px 5px; }
+        .month-group { margin-bottom: 16px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
         .month-header {
-            background: #f1f5f9; padding: 12px 16px;
-            font-size: 0.85rem; font-weight: 800; color: var(--text-sec);
+            background: #f1f5f9; padding: 8px 12px;
+            font-size: 0.75rem; font-weight: 800; color: var(--text-sec);
             text-transform: uppercase; letter-spacing: 1px;
-            display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border);
         }
         
+        /* RIGHE COMPATTE */
         .list-row {
-            padding: 14px 16px; border-bottom: 1px solid var(--border);
+            padding: 10px 12px; border-bottom: 1px solid var(--border);
             display: flex; align-items: center; gap: 10px; cursor: pointer;
             transition: background 0.2s; background-color: #ffffff;
         }
@@ -79,37 +94,45 @@
             100% { background-color: #ffffff; }
         }
         .row-pending { animation: flashPending 2.5s infinite ease-in-out; }
-        .row-confirmed { background-color: #dcfce7 !important; }
+        .row-confirmed { background-color: #dcfce7 !important; border-color: #bbf7d0 !important; }
         .row-rejected { background-color: #fee2e2 !important; }
 
-        .row-icon { width: 36px; height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-        .row-content { flex: 1; min-width: 0; }
-        .row-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .row-subtitle { font-size: 0.75rem; color: var(--text-sec); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .row-date { font-size: 0.8rem; font-weight: 700; color: var(--primary); text-align: right; white-space: nowrap; }
-        .row-status { display: flex; gap: 4px; flex-direction: column; align-items: flex-end; }
+        .row-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .row-content { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
         
-        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .status-green { background: #10b981; }
-        .status-red { background: #ef4444; }
-        .status-gray { background: #cbd5e1; }
+        .row-header { display: flex; justify-content: space-between; align-items: center; }
+        .row-title { font-weight: 800; font-size: 0.95rem; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0; }
+        .row-date-sent { font-size: 0.7rem; color: var(--text-sec); font-weight: 600; white-space: nowrap; }
+        
+        .row-details { font-size: 0.75rem; color: var(--text-main); line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .row-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 2px; }
 
-        .row-obscured { opacity: 0.5; background: #f8fafc !important; animation: none; }
+        .row-obscured { background: #f8fafc !important; opacity: 0.7; animation: none; }
         .row-obscured .row-title { text-decoration: line-through; color: var(--text-sec); }
 
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-sec); }
-        .empty-state .material-icons-round { font-size: 48px; opacity: 0.5; margin-bottom: 10px; }
+        .empty-state { text-align: center; padding: 30px 20px; color: var(--text-sec); }
+        .empty-state .material-icons-round { font-size: 40px; opacity: 0.5; margin-bottom: 8px; }
+
+        /* PULSANTE RAPIDO INSERIMENTO TURNI COMPATTO */
+        .btn-quick-insert {
+            display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;
+            border-radius: 6px; border: 1px solid var(--border); background: #ffffff;
+            color: var(--text-sec); font-size: 0.7rem; font-weight: 700; cursor: pointer; transition: 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+        .btn-quick-insert.inserted { background: #10b981; border-color: #059669; color: #ffffff; }
+        .btn-quick-insert:active { transform: scale(0.95); }
 
         /* --- FAB & MODAL --- */
         .fab {
-            position: fixed; bottom: 24px; right: 24px; width: 60px; height: 60px;
+            position: fixed; bottom: 20px; right: 20px; width: 56px; height: 56px;
             background: linear-gradient(135deg, #2563eb, #1e3a8a); color: white;
-            border-radius: 20px; display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 10px 25px rgba(37,99,235,0.4); border: none; cursor: pointer; z-index: 90;
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 8px 20px rgba(37,99,235,0.4); border: none; cursor: pointer; z-index: 90;
             transition: transform 0.2s;
         }
         .fab:active { transform: scale(0.9); }
-        .fab .material-icons-round { font-size: 32px; }
+        .fab .material-icons-round { font-size: 30px; }
 
         .modal-overlay {
             position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(5px);
@@ -119,46 +142,47 @@
         .modal-overlay.open { opacity: 1; }
         
         .modal-content {
-            background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 24px 24px 0 0;
-            padding: 24px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
+            background: var(--bg-card); width: 100%; max-width: 600px; border-radius: 20px 20px 0 0;
+            padding: 20px; transform: translateY(100%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1);
             max-height: 90vh; overflow-y: auto;
         }
         .modal-overlay.open .modal-content { transform: translateY(0); }
         
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .modal-header h3 { font-size: 1.2rem; font-weight: 900; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .modal-header h3 { font-size: 1.1rem; font-weight: 900; }
         
-        .form-group { margin-bottom: 16px; }
-        .form-row { display: flex; gap: 12px; }
+        .form-group { margin-bottom: 14px; }
+        .form-row { display: flex; gap: 10px; }
         .form-row .form-group { flex: 1; }
-        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-sec); margin-bottom: 6px; text-transform: uppercase; }
+        .form-group label { display: block; font-size: 0.75rem; font-weight: 700; color: var(--text-sec); margin-bottom: 4px; text-transform: uppercase; }
         
         .form-control {
-            width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--border);
+            width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border);
             font-size: 0.95rem; font-weight: 600; background: var(--bg); color: var(--text-main);
         }
         .form-control:focus { border-color: var(--primary); background: #fff; }
-        textarea.form-control { resize: vertical; min-height: 80px; }
+        textarea.form-control { resize: vertical; min-height: 70px; }
         
         .btn-submit {
-            width: 100%; padding: 16px; border-radius: 14px; border: none;
-            background: var(--primary); color: white; font-weight: 800; font-size: 1rem;
-            cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
+            width: 100%; padding: 14px; border-radius: 12px; border: none;
+            background: var(--primary); color: white; font-weight: 800; font-size: 0.95rem;
+            cursor: pointer; margin-top: 5px; box-shadow: 0 4px 15px rgba(37,99,235,0.3);
         }
         .btn-submit:active { transform: scale(0.97); }
 
-        .detail-item { margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+        .detail-item { margin-bottom: 10px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         .detail-item:last-child { border-bottom: none; }
-        .detail-label { font-size: 0.75rem; color: var(--text-sec); font-weight: 700; text-transform: uppercase; }
-        .detail-value { font-size: 1rem; font-weight: 600; color: var(--text-main); margin-top: 4px; }
+        .detail-label { font-size: 0.7rem; color: var(--text-sec); font-weight: 700; text-transform: uppercase; }
+        .detail-value { font-size: 0.95rem; font-weight: 600; color: var(--text-main); margin-top: 2px; }
         
-        .admin-controls { background: #f1f5f9; padding: 16px; border-radius: 12px; margin-top: 20px; }
-        .admin-controls h4 { font-size: 0.85rem; text-transform: uppercase; margin-bottom: 12px; color: var(--text-sec); }
-        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; font-weight: 600; font-size: 0.9rem; }
-        .checkbox-wrapper input { width: 18px; height: 18px; }
+        .admin-controls { background: #f1f5f9; padding: 14px; border-radius: 10px; margin-top: 15px; }
+        .admin-controls h4 { font-size: 0.8rem; text-transform: uppercase; margin-bottom: 10px; color: var(--text-sec); }
         
-        .action-buttons { display: flex; gap: 10px; margin-top: 20px; }
-        .btn-action { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: 700; cursor: pointer; color: white; }
+        .checkbox-wrapper { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-bottom: 8px; }
+        .checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
+        
+        .action-buttons { display: flex; gap: 8px; margin-top: 15px; }
+        .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: white; }
         .btn-hide { background: #f59e0b; }
         .btn-delete { background: #ef4444; }
         .btn-restore { background: #10b981; }
@@ -184,6 +208,9 @@
                 <div class="page-title">Gestione Richieste</div>
             </div>
             <div class="header-right">
+                <button class="btn-icon notes-btn" onclick="window.openModal('notes-modal')" title="Note e Suggerimenti">
+                    <span class="material-icons-round">lightbulb</span>
+                </button>
                 <button class="btn-icon" onclick="window.toggleAdmin()" title="Accesso Admin" id="adminBtn">
                     <span class="material-icons-round" id="adminIcon">admin_panel_settings</span>
                 </button>
@@ -192,15 +219,29 @@
                 </button>
             </div>
         </div>
-        <div class="search-container">
+        
+        <div class="search-container" id="searchBox">
             <span class="material-icons-round">search</span>
-            <input type="text" id="searchInput" placeholder="Cerca per nome, tipo o nota..." onkeyup="window.renderRequests()">
+            <input type="text" id="searchInput" placeholder="Cerca nome o tipo..." onkeyup="window.renderRequests()">
+        </div>
+
+        <div class="admin-tabs" id="adminTabs" style="display: none;">
+            <div class="admin-tab active" id="btnTabRichieste" onclick="window.switchTab('richieste')">
+                <span class="material-icons-round" style="font-size:16px">list_alt</span> Richieste
+            </div>
+            <div class="admin-tab" id="btnTabTurni" onclick="window.switchTab('turni')">
+                <span class="material-icons-round" style="font-size:16px">calendar_month</span> Turni
+            </div>
         </div>
     </header>
 
     <main id="requests-container"></main>
 
-    <button class="fab" onclick="window.openAddModal()">
+    <main id="turni-container">
+        <iframe id="iframeTurni" src="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" title="Consultazione Turni"></iframe>
+    </main>
+
+    <button class="fab" id="mainFab" onclick="window.openModal('add-modal')">
         <span class="material-icons-round">add</span>
     </button>
 
@@ -243,7 +284,7 @@
                     </select>
                 </div>
 
-                <div class="form-group" id="swap-group" style="display:none; background:#f1f5f9; padding:12px; border-radius:12px; border:1px solid #e2e8f0;">
+                <div class="form-group" id="swap-group" style="display:none; background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
                     <label>Con chi fai il cambio?</label>
                     <select id="reqNameSwap" class="form-control">
                         <option value="" disabled selected>Seleziona operatore...</option>
@@ -259,15 +300,23 @@
                     </select>
                 </div>
 
-                <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:12px; border:1px solid #c7d2fe;">
-                    <label style="color:#4338ca">Fascia di Reperibilità</label>
-                    <select id="reqTimeSlot" class="form-control">
-                        <option value="" disabled selected>Seleziona orario...</option>
-                        <option value="13:00/20:00">13:00 - 20:00</option>
-                        <option value="20:00/00:00">20:00 - 00:00</option>
-                        <option value="00:00/07:00">00:00 - 07:00</option>
-                        <option value="07:00/13:00">07:00 - 13:00</option>
-                    </select>
+                <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
+                    <label style="color:#4338ca; margin-bottom: 8px;">Fasce di Reperibilità</label>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="13:00/20:00"> 13:00 - 20:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="20:00/00:00"> 20:00 - 00:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="00:00/07:00"> 00:00 - 07:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="07:00/13:00"> 07:00 - 13:00</label>
+                    </div>
+                </div>
+
+                <div class="form-group" id="approval-group" style="display:none; background:#f0fdfa; padding:12px; border-radius:10px; border:1px solid #ccfbf1;">
+                    <label style="color:#0f766e; margin-bottom: 8px;">Stato Approvazione Caposala</label>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="attesa" checked> <span style="color:#64748b">⏳ In Attesa</span></label>
+                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="si"> <span style="color:#059669">✓ Approvato</span></label>
+                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="no"> <span style="color:#dc2626">✗ Rifiutato</span></label>
+                    </div>
                 </div>
 
                 <div class="form-row">
@@ -293,6 +342,30 @@
 
                 <button type="submit" id="btnSubmit" class="btn-submit">INVIA RICHIESTA</button>
             </form>
+        </div>
+    </div>
+
+    <div id="notes-modal" class="modal-overlay" onclick="window.closeModal('notes-modal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-icons-round" style="color:#eab308; font-size:24px;">lightbulb</span>
+                    <h3 style="color:#451a03;">Note e Consigli</h3>
+                </div>
+                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('notes-modal')">close</span>
+            </div>
+            
+            <div class="form-group">
+                <p style="font-size:0.8rem; color:var(--text-sec); margin-bottom:12px;">Inserisci qui suggerimenti, idee o bug riscontrati. Questa sezione è visibile a tutti.</p>
+                <textarea id="appNotesText" class="form-control" style="min-height:80px; font-size:0.9rem;" placeholder="Scrivi qui una nuova nota..."></textarea>
+                <button class="btn-submit" id="btnSaveNotes" style="background:#eab308; color:#451a03; padding: 12px; margin-top: 10px;" onclick="window.saveNotes()">AGGIUNGI NOTA</button>
+            </div>
+
+            <div id="notes-list-container" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
+                <h4 style="font-size: 0.8rem; color: var(--text-sec); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Bacheca Note Salvate</h4>
+                <div id="notes-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
+                    </div>
+            </div>
         </div>
     </div>
 
@@ -324,6 +397,7 @@
 
         window.isAdmin = false;
         let requests = []; 
+        let savedNotes = [];
 
         const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore'];
 
@@ -345,19 +419,112 @@
             "cambio_turno": "bg-cambio-turno", "recupero_ore": "bg-recupero"
         };
 
-        // GESTIONE VISIBILITÀ CAMPI MODULO
+        // --- GESTIONE NOTE MIGLIORATIVE ---
+        // Ascolta la collezione delle note
+        onSnapshot(query(collection(db, "note_migliorative"), orderBy("timestamp", "desc")), (snapshot) => {
+            savedNotes = [];
+            snapshot.forEach(doc => savedNotes.push({ id: doc.id, ...doc.data() }));
+            window.renderNotes();
+        });
+
+        window.renderNotes = function() {
+            const container = document.getElementById('notes-list');
+            container.innerHTML = "";
+            
+            if (savedNotes.length === 0) {
+                container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--text-sec); font-size:0.8rem;">Nessuna nota presente. Sii il primo a scriverne una!</div>`;
+                return;
+            }
+
+            savedNotes.forEach(n => {
+                const dateObj = n.timestamp ? new Date(n.timestamp) : new Date();
+                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                // Bottone elimina visibile solo agli admin
+                const deleteBtn = window.isAdmin ? `<span class="material-icons-round" style="font-size:16px; color:#ef4444; cursor:pointer;" onclick="window.deleteNote('${n.id}')" title="Elimina">delete</span>` : '';
+
+                container.innerHTML += `
+                    <div style="background: #fef9c3; padding: 10px 12px; border-radius: 8px; border: 1px solid #fde047;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #854d0e;">${dateStr}</span>
+                            ${deleteBtn}
+                        </div>
+                        <div style="font-size: 0.85rem; color: #451a03; white-space: pre-wrap;">${n.testo}</div>
+                    </div>
+                `;
+            });
+        };
+
+        window.saveNotes = async function() {
+            const text = document.getElementById('appNotesText').value.trim();
+            if (!text) {
+                alert("Scrivi qualcosa prima di aggiungere la nota!");
+                return;
+            }
+            
+            const btn = document.getElementById('btnSaveNotes');
+            const originalText = btn.textContent;
+            btn.textContent = "AGGIUNTA IN CORSO...";
+            
+            try {
+                // Aggiunge un nuovo documento alla collezione invece di sovrascrivere
+                await addDoc(collection(db, "note_migliorative"), { 
+                    testo: text,
+                    timestamp: new Date().toISOString()
+                });
+                
+                document.getElementById('appNotesText').value = ""; // Svuota l'input
+                btn.textContent = "AGGIUNTO CON SUCCESSO!";
+                setTimeout(() => btn.textContent = originalText, 1500);
+            } catch(e) {
+                console.error(e);
+                btn.textContent = "ERRORE";
+                setTimeout(() => btn.textContent = originalText, 2000);
+            }
+        };
+
+        window.deleteNote = async function(id) {
+            if(confirm("Eliminare definitivamente questa nota?")) {
+                try { await deleteDoc(doc(db, "note_migliorative", id)); } 
+                catch (error) { console.error(error); }
+            }
+        };
+
+
+        // --- GESTIONE TURNI E UI PRINCIPALE ---
+        window.switchTab = function(tabName) {
+            if(tabName === 'richieste') {
+                document.getElementById('requests-container').style.display = 'block';
+                document.getElementById('searchBox').style.display = 'block';
+                document.getElementById('mainFab').style.display = 'flex';
+                document.getElementById('turni-container').style.display = 'none';
+                document.getElementById('btnTabRichieste').classList.add('active');
+                document.getElementById('btnTabTurni').classList.remove('active');
+            } else {
+                document.getElementById('requests-container').style.display = 'none';
+                document.getElementById('searchBox').style.display = 'none';
+                document.getElementById('mainFab').style.display = 'none';
+                document.getElementById('turni-container').style.display = 'block';
+                document.getElementById('btnTabRichieste').classList.remove('active');
+                document.getElementById('btnTabTurni').classList.add('active');
+            }
+        };
+
         document.getElementById('reqType').addEventListener('change', function(e) {
             const val = e.target.value;
             const swapGroup = document.getElementById('swap-group');
             const swapInput = document.getElementById('reqNameSwap');
             const timeSlotGroup = document.getElementById('time-slot-group');
-            const timeSlotInput = document.getElementById('reqTimeSlot');
+            const approvalGroup = document.getElementById('approval-group'); 
             const dateToGroup = document.getElementById('date-to-group');
             const daysGroup = document.getElementById('days-group');
             const labelDateFrom = document.getElementById('labelDateFrom');
 
             swapGroup.style.display = 'none'; swapInput.required = false;
-            timeSlotGroup.style.display = 'none'; timeSlotInput.required = false;
+            timeSlotGroup.style.display = 'none'; 
+            approvalGroup.style.display = 'none'; 
+            document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
+            
             dateToGroup.style.display = 'block'; daysGroup.style.display = 'block';
             labelDateFrom.textContent = "Dal Giorno";
 
@@ -368,73 +535,101 @@
 
             if(val === 'copertura_reperibilita') {
                 timeSlotGroup.style.display = 'block';
-                timeSlotInput.required = true;
                 dateToGroup.style.display = 'none';
                 daysGroup.style.display = 'none';
                 labelDateFrom.textContent = "Il Giorno (Data)";
             }
+
+            if(APPROVAL_TYPES.includes(val)) {
+                approvalGroup.style.display = 'block';
+            }
         });
 
-        // ASCOLTATORE FIREBASE
         onSnapshot(query(collection(db, "richieste_turni"), orderBy("dateFrom", "desc")), (snapshot) => {
             requests = []; snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
             window.renderRequests();
         });
 
-        // SALVATAGGIO
         window.saveRequest = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.textContent = "INVIO IN CORSO..."; btn.style.opacity = "0.7";
+            btn.textContent = "INVIO..."; 
+            btn.style.opacity = "0.7";
             
-            const reqType = document.getElementById('reqType').value;
-            const dFrom = document.getElementById('reqDateFrom').value;
-            const dToRaw = document.getElementById('reqDateTo').value;
-            
-            const newReq = {
-                timestamp: new Date().toISOString(),
-                name: document.getElementById('reqName').value,
-                type: reqType,
-                swapWith: (swapGroup.style.display === 'block') ? document.getElementById('reqNameSwap').value : null,
-                timeSlot: (reqType === 'copertura_reperibilita') ? document.getElementById('reqTimeSlot').value : null,
-                dateFrom: dFrom,
-                dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
-                notes: document.getElementById('reqNotes').value.trim(),
-                insertedInShifts: false,
-                headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
-                obscured: false
-            };
-
             try {
+                const reqType = document.getElementById('reqType').value;
+                const dFrom = document.getElementById('reqDateFrom').value;
+                const dToRaw = document.getElementById('reqDateTo').value;
+                const isSwap = (reqType === 'cambio_turno' || reqType === 'cambio_reperibilita' || reqType === 'copertura_reperibilita');
+                
+                let selectedTimeSlots = null;
+                if(reqType === 'copertura_reperibilita') {
+                    const checkboxes = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
+                    if(checkboxes.length === 0) {
+                        alert("Devi spuntare almeno una fascia.");
+                        btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1";
+                        return;
+                    }
+                    selectedTimeSlots = Array.from(checkboxes).map(cb => cb.value).join(", ");
+                }
+
+                let approvalStatus = 'non_richiesta';
+                if(APPROVAL_TYPES.includes(reqType)) {
+                    approvalStatus = document.querySelector('input[name="reqApproval"]:checked').value;
+                }
+
+                const newReq = {
+                    timestamp: new Date().toISOString(),
+                    name: document.getElementById('reqName').value,
+                    type: reqType,
+                    swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
+                    timeSlot: selectedTimeSlots,
+                    dateFrom: dFrom,
+                    dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                    effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                    notes: document.getElementById('reqNotes').value.trim(),
+                    insertedInShifts: false,
+                    insertedAt: null,
+                    headNurseApproval: approvalStatus,
+                    obscured: false
+                };
+
                 await addDoc(collection(db, "richieste_turni"), newReq);
+                
                 document.getElementById('requestForm').reset();
-                document.getElementById('reqType').dispatchEvent(new Event('change')); // reset visibility
+                document.getElementById('reqType').dispatchEvent(new Event('change'));
                 window.closeModal('add-modal');
                 if(navigator.vibrate) navigator.vibrate(50);
-            } catch (error) { alert("Errore durante l'invio."); } 
-            finally { btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1"; }
+                
+            } catch (error) { 
+                console.error(error); alert("Errore durante l'invio."); 
+            } finally { 
+                btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1"; 
+            }
         };
 
-        // ADMIN E AZIONI
         window.toggleAdmin = function() {
             if(window.isAdmin) {
                 window.isAdmin = false;
                 document.getElementById('adminIcon').style.color = "white";
+                document.getElementById('adminTabs').style.display = "none";
+                window.switchTab('richieste');
                 alert("Uscito dalla modalità Admin.");
             } else {
                 const pwd = prompt("Inserisci la password per l'accesso Admin:");
-                if(pwd === "000000") {
+                if(pwd === "00") {
                     window.isAdmin = true;
                     document.getElementById('adminIcon').style.color = "#fde047";
+                    document.getElementById('adminTabs').style.display = "flex";
                     alert("Accesso Admin effettuato.");
                 } else if(pwd !== null) { alert("Password errata."); }
             }
             window.renderRequests();
+            window.renderNotes(); // Aggiorna anche le note per mostrare i pulsanti "Elimina"
         };
 
         window.deleteRequest = async function(id) {
-            if(confirm("Vuoi eliminare definitivamente questa richiesta?")) {
+            if(confirm("Eliminare definitivamente?")) {
                 try { await deleteDoc(doc(db, "richieste_turni", id)); window.closeModal('detail-modal'); } 
                 catch (error) { console.error(error); }
             }
@@ -453,9 +648,29 @@
         };
 
         window.updateStatus = async function(id, field, value) {
-            try { await updateDoc(doc(db, "richieste_turni", id), { [field]: value }); } 
-            catch (error) { console.error(error); }
+            try {
+                const updateData = { [field]: value };
+                if (field === 'insertedInShifts') {
+                    updateData.insertedAt = value ? new Date().toISOString() : null;
+                }
+                await updateDoc(doc(db, "richieste_turni", id), updateData);
+                
+                if (document.getElementById('detail-modal').classList.contains('open')) {
+                    setTimeout(() => window.openDetailModal(id), 200); 
+                }
+            } catch (error) { console.error(error); }
         };
+
+        window.toggleInserted = async function(id, currentState) {
+            if(navigator.vibrate) navigator.vibrate(20);
+            const newState = !currentState;
+            try {
+                await updateDoc(doc(db, "richieste_turni", id), { 
+                    insertedInShifts: newState,
+                    insertedAt: newState ? new Date().toISOString() : null
+                });
+            } catch(e) { console.error(e); }
+        }
 
         window.downloadJSON = function() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(requests, null, 2));
@@ -464,7 +679,6 @@
             document.body.appendChild(dl); dl.click(); dl.remove();
         };
 
-        // RENDER LISTA
         window.renderRequests = function() {
             const container = document.getElementById('requests-container');
             const search = document.getElementById('searchInput').value.toLowerCase();
@@ -477,81 +691,145 @@
             }
 
             const isPending = (r) => !r.obscured && ((APPROVAL_TYPES.includes(r.type) && r.headNurseApproval === 'attesa') || (!APPROVAL_TYPES.includes(r.type) && !r.insertedInShifts));
-            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(a.dateFrom) - new Date(b.dateFrom));
-            const otherRequests = filtered.filter(r => !isPending(r));
+            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(b.dateFrom) - new Date(a.dateFrom));
+            const otherRequests = filtered.filter(r => !isPending(r)).sort((a,b) => new Date(b.dateFrom) - new Date(a.dateFrom));
 
             const generateRow = (r) => {
-                const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
-                const dTo = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit' });
+                const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dTo = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
                 const dateStr = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
+                const sendDate = new Date(r.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                
+                let rowClass = "";
                 
                 if(r.obscured) {
-                    if(!window.isAdmin) return `<div class="list-row row-obscured"><div class="row-icon bg-default"><span class="material-icons-round">visibility_off</span></div><div class="row-content"><div class="row-title">Richiesta oscurata</div><div class="row-subtitle">Traccia mantenuta</div></div><div class="row-date">${dateStr}</div></div>`;
+                    if(!window.isAdmin) {
+                        return `
+                            <div class="list-row row-obscured" onclick="window.openDetailModal('${r.id}')">
+                                <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:18px">visibility_off</span></div>
+                                <div class="row-content">
+                                    <div class="row-header">
+                                        <div class="row-title">${r.name}</div>
+                                        <div class="row-date-sent">Invio: ${sendDate}</div>
+                                    </div>
+                                    <div class="row-details" style="color: #ef4444; font-weight: 700;">Richiesta Ritirata / Oscurata</div>
+                                </div>
+                            </div>`;
+                    }
+                    rowClass = "row-obscured";
                 }
 
-                let rowClass = r.obscured ? "row-obscured" : "";
                 if(!r.obscured) {
                     if(APPROVAL_TYPES.includes(r.type)) {
                         if(r.headNurseApproval === 'attesa') rowClass = "row-pending";
                         else if(r.headNurseApproval === 'si') rowClass = "row-confirmed";
                         else if(r.headNurseApproval === 'no') rowClass = "row-rejected";
-                    } else if(r.insertedInShifts) { rowClass = "row-confirmed"; }
+                    } else if(r.insertedInShifts) { 
+                        rowClass = "row-confirmed"; 
+                    }
                 }
 
-                let statusHtml = '';
-                if(r.insertedInShifts) statusHtml += `<div class="status-dot status-green" title="Inserita nei turni"></div>`;
-                if(APPROVAL_TYPES.includes(r.type)) {
-                    if(r.headNurseApproval === 'si') statusHtml += `<div class="status-dot status-green" title="Approvata"></div>`;
-                    else if(r.headNurseApproval === 'no') statusHtml += `<div class="status-dot status-red" title="Rifiutata"></div>`;
-                    else statusHtml += `<div class="status-dot status-gray" title="In attesa"></div>`;
+                let caposalaBadge = '';
+                if (APPROVAL_TYPES.includes(r.type) && !r.obscured) {
+                    if(r.headNurseApproval === 'si') caposalaBadge = `<span style="color: #059669; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #10b981;">✓ Approvata</span>`;
+                    else if(r.headNurseApproval === 'no') caposalaBadge = `<span style="color: #dc2626; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #ef4444;">✗ Rifiutata</span>`;
+                    else caposalaBadge = `<span style="color: #d97706; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f59e0b;">⏳ Attesa</span>`;
                 }
 
-                let subTitle = r.type === 'copertura_reperibilita' ? `${LABELS[r.type]} ${r.timeSlot}` : `${LABELS[r.type]} • ${r.effectiveDays} gg`;
-                if(r.swapWith) subTitle += ` (con ${r.swapWith})`;
-                const adminTag = (r.obscured && window.isAdmin) ? `<span style="color:#ef4444;font-size:0.7rem">[OSCURATA]</span> ` : '';
+                let periodDetails = dateStr;
+                if(r.type === 'copertura_reperibilita' && r.timeSlot) periodDetails += ` (${r.timeSlot})`;
+                if(r.swapWith) periodDetails += ` (con ${r.swapWith})`;
+
+                const adminTag = (r.obscured && window.isAdmin) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
+
+                const insertButton = (!r.obscured && window.isAdmin) ? `
+                    <button class="btn-quick-insert ${r.insertedInShifts ? 'inserted' : ''}" onclick="event.stopPropagation(); window.toggleInserted('${r.id}', ${r.insertedInShifts})">
+                        <span class="material-icons-round" style="font-size:14px">${r.insertedInShifts ? 'check_circle' : 'radio_button_unchecked'}</span>
+                        ${r.insertedInShifts ? 'Inserito' : 'Segna inserito'}
+                    </button>
+                ` : '';
 
                 return `
                     <div class="list-row ${rowClass}" onclick="window.openDetailModal('${r.id}')">
-                        <div class="row-icon ${COLORS[r.type] || "bg-default"}"><span class="material-icons-round" style="font-size:20px">${ICONS[r.type]}</span></div>
-                        <div class="row-content"><div class="row-title">${adminTag}${r.name}</div><div class="row-subtitle">${subTitle}</div></div>
-                        <div class="row-status"><div class="row-date">${dateStr}</div><div style="display:flex; gap:4px; margin-top:4px;">${statusHtml}</div></div>
+                        <div class="row-icon ${COLORS[r.type] || "bg-default"}"><span class="material-icons-round" style="font-size:18px">${ICONS[r.type]}</span></div>
+                        <div class="row-content">
+                            <div class="row-header">
+                                <div class="row-title">${adminTag}${r.name}</div>
+                                <div class="row-date-sent">Invio: ${sendDate}</div>
+                            </div>
+                            <div class="row-details">
+                                <span style="color:var(--text-sec);">Tipo:</span> <strong>${LABELS[r.type]}</strong> • <span style="color: var(--primary); font-weight:600;">${periodDetails}</span>
+                            </div>
+                            ${(!r.obscured && (caposalaBadge || insertButton)) ? `
+                            <div class="row-actions">
+                                <div>${caposalaBadge}</div>
+                                <div>${insertButton}</div>
+                            </div>` : ''}
+                        </div>
                     </div>`;
             };
 
             if(pendingRequests.length > 0) {
-                container.innerHTML += `<div class="section-title">In Attesa d'Azione</div><div class="month-group">${pendingRequests.map(generateRow).join('')}</div>`;
+                container.innerHTML += `<div class="section-title" style="color:#ef4444;">In Attesa d'Azione</div><div class="month-group" style="border: 2px solid #fee2e2;">${pendingRequests.map(generateRow).join('')}</div>`;
             }
 
             if(otherRequests.length > 0) {
                 container.innerHTML += `<div class="section-title">Storico e Confermate</div>`;
                 const groups = {};
+                const groupKeys = [];
+                
                 otherRequests.forEach(r => {
                     const m = new Date(r.dateFrom).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
                     const cap = m.charAt(0).toUpperCase() + m.slice(1);
-                    if(!groups[cap]) groups[cap] = [];
+                    if(!groups[cap]) {
+                        groups[cap] = [];
+                        groupKeys.push(cap);
+                    }
                     groups[cap].push(r);
                 });
-                for (const [month, list] of Object.entries(groups)) {
-                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:18px">calendar_month</span> ${month}</div>${list.map(generateRow).join('')}</div>`;
+                
+                for (const month of groupKeys) {
+                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:16px">calendar_month</span> ${month}</div>${groups[month].map(generateRow).join('')}</div>`;
                 }
             }
         };
 
-        // GESTIONE MODALI
-        window.openAddModal = function() {
-            document.getElementById('add-modal').style.display = 'flex';
-            setTimeout(() => document.getElementById('add-modal').classList.add('open'), 10);
+        window.openModal = function(id) {
+            document.getElementById(id).style.display = 'flex';
+            setTimeout(() => document.getElementById(id).classList.add('open'), 10);
+        }
+
+        window.closeModal = function(id, e) {
+            if (e && e.target !== e.currentTarget) return;
+            const m = document.getElementById(id);
+            m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300);
         }
 
         window.openDetailModal = function(id) {
             const r = requests.find(x => x.id === id);
-            if(!r || (r.obscured && !window.isAdmin)) return; // Se oscurata e non admin, non si apre il dettaglio
+            if(!r || (r.obscured && !window.isAdmin)) return; 
 
-            let html = `<div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
-                        <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>`;
+            let html = ``;
+            
+            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                        <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
+                        <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
+                     </div>`;
+
+            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                        <div class="detail-label" style="color: var(--primary);">Stato Inserimento Turni</div>
+                        <div class="detail-value" style="font-size: 0.95rem;">
+                            ${r.insertedInShifts 
+                                ? `<span style="color: #059669; font-weight: 700;">✓ Inserita il ${r.insertedAt ? new Date(r.insertedAt).toLocaleString('it-IT') : 'Data non disponibile'}</span>` 
+                                : `<span style="color: #64748b; font-weight: 700;">⏳ In attesa di inserimento</span>`}
+                        </div>
+                     </div>`;
+
+            html += `<div class="detail-item" style="margin-top: 15px;"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
+                     <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>`;
 
             if(r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
-            if(r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fascia Oraria</div><div class="detail-value">${r.timeSlot}</div></div>`;
+            if(r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fasce Orarie Scelte</div><div class="detail-value">${r.timeSlot}</div></div>`;
             
             const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT');
             const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
@@ -559,23 +837,40 @@
             
             if(r.type !== 'copertura_reperibilita') html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
             
-            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>
-                     <div class="detail-item"><div class="detail-label">Data Inserimento</div><div class="detail-value" style="font-size:0.85rem;font-weight:400">${new Date(r.timestamp).toLocaleString('it-IT')}</div></div>`;
+            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>`;
 
-            html += `<div class="admin-controls"><h4>Gestione Turni</h4>
-                        <label class="checkbox-wrapper"><input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)"> Inserita nei turni</label>`;
-            
-            if (APPROVAL_TYPES.includes(r.type)) {
-                html += `<div style="margin-top: 10px;"><div class="detail-label" style="margin-bottom:6px">Approvazione Caposala</div>
-                        <select class="form-control" onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                            <option value="attesa" ${r.headNurseApproval === 'attesa' ? 'selected' : ''}>In Attesa</option>
-                            <option value="si" ${r.headNurseApproval === 'si' ? 'selected' : ''}>Sì, Approvato</option>
-                            <option value="no" ${r.headNurseApproval === 'no' ? 'selected' : ''}>No, Rifiutato</option>
-                        </select></div>`;
+            if (window.isAdmin) {
+                html += `<div class="admin-controls">
+                            <h4>Gestione Turni</h4>
+                            <div style="margin-bottom: 10px;">
+                                <label class="checkbox-wrapper">
+                                    <input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)"> 
+                                    Segna come "Inserita nei turni"
+                                </label>
+                            </div>`;
+                
+                if (APPROVAL_TYPES.includes(r.type)) {
+                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">Approvazione Caposala</div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                        <span style="color: #059669;">Sì, Approvato</span>
+                                    </label>
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                        <span style="color: #dc2626;">No, Rifiutato</span>
+                                    </label>
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                        <span style="color: #64748b;">In Attesa</span>
+                                    </label>
+                                </div>
+                             </div>`;
+                }
+                html += `</div>`;
             }
-            html += `</div>`;
 
-            // Bottoni Azione (Oscura, Elimina, Ripristina)
             html += `<div class="action-buttons">`;
             if(r.obscured) {
                 if(window.isAdmin) {
@@ -589,14 +884,7 @@
             html += `</div>`;
 
             document.getElementById('detail-content').innerHTML = html;
-            document.getElementById('detail-modal').style.display = 'flex';
-            setTimeout(() => document.getElementById('detail-modal').classList.add('open'), 10);
-        }
-
-        window.closeModal = function(id, e) {
-            if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById(id);
-            m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300);
+            window.openModal('detail-modal');
         }
     </script>
 </body>
