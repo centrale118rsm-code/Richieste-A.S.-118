@@ -161,6 +161,7 @@
             font-size: 0.95rem; font-weight: 600; background: var(--bg); color: var(--text-main);
         }
         .form-control:focus { border-color: var(--primary); background: #fff; }
+        .form-control[readonly] { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
         textarea.form-control { resize: vertical; min-height: 70px; }
         
         .btn-submit {
@@ -197,6 +198,12 @@
         .bg-recupero { background: #f3e8ff; color: #7e22ce; }
         .bg-default { background: #f1f5f9; color: #475569; }
 
+        /* Stile Guida */
+        details { background: #f1f5f9; border-radius: 8px; margin-bottom: 10px; padding: 10px; }
+        summary { font-weight: 700; cursor: pointer; color: var(--primary); outline: none; }
+        details p, details ul { font-size: 0.85rem; color: var(--text-main); margin-top: 8px; padding-left: 10px; line-height: 1.4; }
+        details ul li { margin-bottom: 6px; }
+
     </style>
 </head>
 <body>
@@ -208,6 +215,9 @@
                 <div class="page-title">Gestione Richieste</div>
             </div>
             <div class="header-right">
+                <button class="btn-icon" onclick="window.openModal('guide-modal')" title="Manuale">
+                    <span class="material-icons-round">menu_book</span>
+                </button>
                 <button class="btn-icon notes-btn" onclick="window.openModal('notes-modal')" title="Note e Suggerimenti">
                     <span class="material-icons-round">lightbulb</span>
                 </button>
@@ -241,9 +251,68 @@
         <iframe id="iframeTurni" src="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" title="Consultazione Turni"></iframe>
     </main>
 
-    <button class="fab" id="mainFab" onclick="window.openModal('add-modal')">
+    <button class="fab" id="mainFab" onclick="window.openAddModal()">
         <span class="material-icons-round">add</span>
     </button>
+
+    <div id="login-modal" class="modal-overlay">
+        <div class="modal-content" style="border-radius: 20px; transform: translateY(0); margin: 20px; align-self: center;">
+            <div class="modal-header">
+                <h3>Benvenuto, chi sei?</h3>
+            </div>
+            <div class="form-group">
+                <label>Seleziona il tuo nome per continuare</label>
+                <select id="loginSelectName" class="form-control" required>
+                    <option value="" disabled selected>Scegli...</option>
+                    <option value="Barbieri">Barbieri</option>
+                    <option value="Pazzaglia">Pazzaglia</option>
+                    <option value="Bianchi">Bianchi</option>
+                    <option value="Sarti">Sarti</option>
+                    <option value="Ghiotti">Ghiotti</option>
+                    <option value="Berardi">Berardi</option>
+                    <option value="Michelotti">Michelotti</option>
+                    <option value="Volpini">Volpini</option>
+                    <option value="Fabbri">Fabbri</option>
+                </select>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-sec); margin-bottom: 15px;">Il nome verrà salvato su questo dispositivo. Potrai operare solo a tuo nome.</p>
+            <button class="btn-submit" onclick="window.saveUserLogin()">SALVA ED ENTRA</button>
+        </div>
+    </div>
+
+    <div id="guide-modal" class="modal-overlay" onclick="window.closeModal('guide-modal', event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="material-icons-round" style="color:var(--primary); font-size:24px;">menu_book</span>
+                    <h3 style="color:var(--primary);">Manuale Utente</h3>
+                </div>
+                <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('guide-modal')">close</span>
+            </div>
+            
+            <details>
+                <summary>Come stipulare una richiesta</summary>
+                <p>1. Clicca sul pulsante <span style="color:white; background:var(--primary); padding:2px 5px; border-radius:4px; font-size:10px;">+</span> in basso a destra.<br>
+                   2. Il tuo nome è già pre-impostato.<br>
+                   3. Seleziona il <strong>Tipo di Richiesta</strong> dal menu a tendina.<br>
+                   4. A seconda della richiesta, compila i campi richiesti (giorni, fasce orarie, con chi fai il cambio, ecc).<br>
+                   5. Clicca su <strong>INVIA RICHIESTA</strong>. La richiesta comparirà istantaneamente in bacheca.</p>
+            </details>
+            <details>
+                <summary>Approvazione Caposala & Standby</summary>
+                <p>Selezionando permessi, ferie o aspettative, la richiesta necessita dell'ok della caposala. Fino a quel momento la richiesta rimarrà evidenziata in giallo (in standby).<br>
+                <strong>Tutti gli operatori</strong> possono aprire il dettaglio della richiesta e aggiornare la spunta di approvazione non appena si conosce l'esito.</p>
+            </details>
+            <details>
+                <summary>Ritirare / Oscurare una richiesta</summary>
+                <p>Hai sbagliato o vuoi annullare una richiesta? Cliccaci sopra e premi <strong>Ritira / Oscura</strong>. Potrai farlo <u>solo per le tue richieste</u>. Le richieste oscurate saranno invisibili per i colleghi, ma l'amministratore potrà sempre vederle e recuperarle se necessario.</p>
+            </details>
+            <details>
+                <summary>Verificare direttamente i Turni</summary>
+                <p>Nel dettaglio di ogni richiesta, a fianco al periodo indicato, troverai l'icona <span class="material-icons-round" style="font-size:14px; vertical-align:middle;">event</span>. Cliccala per aprire direttamente la tabella dei turni in una nuova pagina.</p>
+            </details>
+        </div>
+    </div>
 
     <div id="add-modal" class="modal-overlay" onclick="window.closeModal('add-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -255,18 +324,7 @@
             <form id="requestForm" onsubmit="window.saveRequest(event)">
                 <div class="form-group">
                     <label>Operatore</label>
-                    <select id="reqName" class="form-control" required>
-                        <option value="" disabled selected>Seleziona operatore...</option>
-                        <option value="Barbieri">Barbieri</option>
-                        <option value="Pazzaglia">Pazzaglia</option>
-                        <option value="Bianchi">Bianchi</option>
-                        <option value="Sarti">Sarti</option>
-                        <option value="Ghiotti">Ghiotti</option>
-                        <option value="Berardi">Berardi</option>
-                        <option value="Michelotti">Michelotti</option>
-                        <option value="Volpini">Volpini</option>
-                        <option value="Fabbri">Fabbri</option>
-                    </select>
+                    <input type="text" id="reqName" class="form-control" readonly>
                 </div>
                 
                 <div class="form-group">
@@ -281,6 +339,12 @@
                         <option value="cambio_reperibilita">🔄 Cambio Reperibilità</option>
                         <option value="cambio_turno">🔄 Cambio Turno</option>
                         <option value="recupero_ore">⏳ Recupero Ore</option>
+                        <option value="permesso_matrimonio">💍 Permesso Matrimonio</option>
+                        <option value="permesso_studio">🎓 Permesso Studio</option>
+                        <option value="permesso_sportivo">⚽ Permesso Sportivo</option>
+                        <option value="permesso_notte">🌙 Permesso Notte</option>
+                        <option value="aspettativa">✈️ Aspettativa</option>
+                        <option value="permesso_lutto">⛪ Permesso Lutto</option>
                     </select>
                 </div>
 
@@ -311,7 +375,7 @@
                 </div>
 
                 <div class="form-group" id="approval-group" style="display:none; background:#f0fdfa; padding:12px; border-radius:10px; border:1px solid #ccfbf1;">
-                    <label style="color:#0f766e; margin-bottom: 8px;">Stato Approvazione Caposala</label>
+                    <label style="color:#0f766e; margin-bottom: 8px;">La caposala deve sempre approvare questo tipo di richiesta</label>
                     <div style="display: flex; flex-direction: column; gap: 4px;">
                         <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="attesa" checked> <span style="color:#64748b">⏳ In Attesa</span></label>
                         <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="si"> <span style="color:#059669">✓ Approvato</span></label>
@@ -398,25 +462,53 @@
         window.isAdmin = false;
         let requests = []; 
         let savedNotes = [];
+        let currentUser = localStorage.getItem('118_user_name');
 
-        const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore'];
+        // Check Login al caricamento
+        window.addEventListener('DOMContentLoaded', () => {
+            if (!currentUser) {
+                document.getElementById('login-modal').style.display = 'flex';
+                document.getElementById('login-modal').style.opacity = '1';
+                document.getElementById('login-modal').style.zIndex = '9999';
+            }
+        });
+
+        window.saveUserLogin = function() {
+            const name = document.getElementById('loginSelectName').value;
+            if (!name) { alert("Seleziona il tuo nome prima di procedere."); return; }
+            localStorage.setItem('118_user_name', name);
+            currentUser = name;
+            document.getElementById('login-modal').style.display = 'none';
+        };
+
+        const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore', 'permesso_matrimonio', 'permesso_studio', 'permesso_sportivo', 'permesso_notte', 'aspettativa', 'permesso_lutto'];
 
         const LABELS = { 
             "copertura_reperibilita": "Copertura Reperibilità",
             "ferie": "Ferie", "ferie_anno_prec": "Ferie Anno Prec.",
             "permesso_ore": "Permesso Ore", "permesso": "Permesso",
             "cambio_reperibilita": "Cambio Reperibilità", "cambio_turno": "Cambio Turno",
-            "recupero_ore": "Recupero Ore"
+            "recupero_ore": "Recupero Ore",
+            "permesso_matrimonio": "Permesso Matrimonio",
+            "permesso_studio": "Permesso Studio",
+            "permesso_sportivo": "Permesso Sportivo",
+            "permesso_notte": "Permesso Notte",
+            "aspettativa": "Aspettativa",
+            "permesso_lutto": "Permesso Lutto"
         };
         const ICONS = { 
             "copertura_reperibilita": "shield", "ferie": "beach_access", "ferie_anno_prec": "history",
             "permesso_ore": "schedule", "permesso": "timer", "cambio_reperibilita": "swap_calls",
-            "cambio_turno": "swap_horiz", "recupero_ore": "hourglass_empty"
+            "cambio_turno": "swap_horiz", "recupero_ore": "hourglass_empty",
+            "permesso_matrimonio": "favorite", "permesso_studio": "school", "permesso_sportivo": "sports_soccer",
+            "permesso_notte": "nights_stay", "aspettativa": "flight_takeoff", "permesso_lutto": "church"
         };
         const COLORS = {
             "copertura_reperibilita": "bg-copertura", "ferie": "bg-ferie", "ferie_anno_prec": "bg-ferie-prec",
             "permesso_ore": "bg-permesso-ore", "permesso": "bg-permesso", "cambio_reperibilita": "bg-cambio-rep",
-            "cambio_turno": "bg-cambio-turno", "recupero_ore": "bg-recupero"
+            "cambio_turno": "bg-cambio-turno", "recupero_ore": "bg-recupero",
+            "permesso_matrimonio": "bg-permesso", "permesso_studio": "bg-permesso", "permesso_sportivo": "bg-permesso",
+            "permesso_notte": "bg-permesso", "aspettativa": "bg-ferie", "permesso_lutto": "bg-default"
         };
 
         // --- GESTIONE NOTE MIGLIORATIVE ---
@@ -455,10 +547,7 @@
 
         window.saveNotes = async function() {
             const text = document.getElementById('appNotesText').value.trim();
-            if (!text) {
-                alert("Scrivi qualcosa prima di aggiungere la nota!");
-                return;
-            }
+            if (!text) { alert("Scrivi qualcosa prima di aggiungere la nota!"); return; }
             
             const btn = document.getElementById('btnSaveNotes');
             const originalText = btn.textContent;
@@ -505,6 +594,11 @@
                 document.getElementById('btnTabRichieste').classList.remove('active');
                 document.getElementById('btnTabTurni').classList.add('active');
             }
+        };
+
+        window.openAddModal = function() {
+            document.getElementById('reqName').value = currentUser; // Pre-imposta il nome dell'utente
+            window.openModal('add-modal');
         };
 
         document.getElementById('reqType').addEventListener('change', function(e) {
@@ -652,21 +746,6 @@
                     updateData.insertedAt = value ? new Date().toISOString() : null;
                 }
                 await updateDoc(doc(db, "richieste_turni", id), updateData);
-                
-                if (document.getElementById('detail-modal').classList.contains('open')) {
-                    setTimeout(() => window.openDetailModal(id), 200); 
-                }
-            } catch (error) { console.error(error); }
-        };
-
-        // --- NUOVA FUNZIONE PER AGGIORNARE LA DATA DI INVIO (TIMESTAMP) ---
-        window.updateSubmissionDate = async function(id, value) {
-            if(!value) return;
-            try {
-                const newDate = new Date(value).toISOString();
-                // Aggiorna il timestamp nel database. 
-                // Firebase si accorgerà della modifica e sposterà l'elemento nella lista automaticamente
-                await updateDoc(doc(db, "richieste_turni", id), { timestamp: newDate });
                 
                 if (document.getElementById('detail-modal').classList.contains('open')) {
                     setTimeout(() => window.openDetailModal(id), 200); 
@@ -823,30 +902,13 @@
             const r = requests.find(x => x.id === id);
             if(!r || (r.obscured && !window.isAdmin)) return; 
 
-            // Costruisci il formato giusto per l'input datetime-local (Timestamp di Invio)
-            let localTimestamp = "";
-            if (r.timestamp) {
-                const d = new Date(r.timestamp);
-                const pad = (n) => n.toString().padStart(2, '0');
-                localTimestamp = `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
-            }
-
             let html = ``;
             
-            // PRIMO BLOCCO: SE ADMIN, MOSTRA INPUT EDITABILE, ALTRIMENTI TESTO NORMALE
-            if (window.isAdmin) {
-                html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                            <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta <span style="color:#ef4444; font-weight:800;">(MODIFICABILE)</span></div>
-                            <input type="datetime-local" class="form-control" style="padding: 6px 10px; font-size: 0.85rem; margin-top: 6px; border-color: var(--primary);"
-                                   value="${localTimestamp}"
-                                   onchange="window.updateSubmissionDate('${r.id}', this.value)">
-                         </div>`;
-            } else {
-                html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                            <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
-                            <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
-                         </div>`;
-            }
+            // LA DATA È ORA SOLO TESTO (NESSUN INPUT ADMIN PER MODIFICARLA)
+            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
+                        <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
+                        <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
+                     </div>`;
 
             html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
                         <div class="detail-label" style="color: var(--primary);">Stato Inserimento Turni</div>
@@ -865,42 +927,53 @@
             
             const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT');
             const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
-            html += `<div class="detail-item"><div class="detail-label">Periodo</div><div class="detail-value">${r.type === 'copertura_reperibilita' || dFrom === dTo ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo}</div></div>`;
+            const periodStr = r.type === 'copertura_reperibilita' || dFrom === dTo ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
+            
+            html += `<div class="detail-item">
+                        <div class="detail-label">Periodo</div>
+                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                            <div class="detail-value">${periodStr}</div>
+                            <a href="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" target="_blank" class="btn-icon" style="background:var(--primary);color:white;width:30px;height:30px;" title="Apri i Turni">
+                                <span class="material-icons-round" style="font-size:18px;">event</span>
+                            </a>
+                        </div>
+                     </div>`;
             
             if(r.type !== 'copertura_reperibilita') html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
             
             html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>`;
 
+            // SEZIONE CAPOSALA ORA APERTA A TUTTI (E INCLUSA NELLE NUOVE RICHIESTE)
+            if (APPROVAL_TYPES.includes(r.type)) {
+                html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                            <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">La caposala deve sempre approvare questo tipo di richiesta</div>
+                            <div style="display: flex; flex-direction: column; gap: 10px;">
+                                <label class="checkbox-wrapper">
+                                    <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                    <span style="color: #059669;">Sì, Approvato</span>
+                                </label>
+                                <label class="checkbox-wrapper">
+                                    <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                    <span style="color: #dc2626;">No, Rifiutato</span>
+                                </label>
+                                <label class="checkbox-wrapper">
+                                    <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
+                                    <span style="color: #64748b;">In Attesa</span>
+                                </label>
+                            </div>
+                         </div>`;
+            }
+
             if (window.isAdmin) {
                 html += `<div class="admin-controls">
-                            <h4>Gestione Turni</h4>
+                            <h4>Gestione Turni (Solo Admin)</h4>
                             <div style="margin-bottom: 10px;">
                                 <label class="checkbox-wrapper">
                                     <input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)"> 
                                     Segna come "Inserita nei turni"
                                 </label>
-                            </div>`;
-                
-                if (APPROVAL_TYPES.includes(r.type)) {
-                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">Approvazione Caposala</div>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                        <span style="color: #059669;">Sì, Approvato</span>
-                                    </label>
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                        <span style="color: #dc2626;">No, Rifiutato</span>
-                                    </label>
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                        <span style="color: #64748b;">In Attesa</span>
-                                    </label>
-                                </div>
-                             </div>`;
-                }
-                html += `</div>`;
+                            </div>
+                         </div>`;
             }
 
             html += `<div class="action-buttons">`;
@@ -910,8 +983,13 @@
                     html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
                 }
             } else {
-                html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira / Oscura</button>`;
-                if(window.isAdmin) html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                // Può oscurare solo chi l'ha creata (oppure l'admin)
+                if (r.name === currentUser || window.isAdmin) {
+                    html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira / Oscura</button>`;
+                }
+                if(window.isAdmin) {
+                    html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                }
             }
             html += `</div>`;
 
