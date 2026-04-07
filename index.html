@@ -55,14 +55,14 @@
         .search-container input:focus { background: rgba(255,255,255,0.3); outline: none; }
         .search-container .material-icons-round { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 20px; color: rgba(255,255,255,0.8); }
 
-        /* --- ADMIN TABS --- */
-        .admin-tabs { display: flex; gap: 8px; margin-top: 12px; }
-        .admin-tab { 
+        /* --- MAIN TABS (VISIBILI A TUTTI) --- */
+        .main-tabs { display: flex; gap: 8px; margin-top: 12px; }
+        .main-tab { 
             flex: 1; text-align: center; padding: 10px 8px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
             border-radius: 10px; background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.7); 
             cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px;
         }
-        .admin-tab.active { background: #fff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .main-tab.active { background: #fff; color: var(--primary); box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
 
         /* --- MAIN CONTENT (LISTA) --- */
         #requests-container { padding: 10px 15px; flex: 1; overflow-y: auto; padding-bottom: 100px; display: block; }
@@ -73,12 +73,16 @@
         
         .section-title { font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px 5px; }
         .month-group { margin-bottom: 16px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
+        
+        /* HEADER MESE MODIFICATO PER CLICK */
         .month-header {
-            background: #f1f5f9; padding: 8px 12px;
+            background: #f1f5f9; padding: 10px 12px;
             font-size: 0.75rem; font-weight: 800; color: var(--text-sec);
             text-transform: uppercase; letter-spacing: 1px;
-            display: flex; align-items: center; gap: 6px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border);
+            cursor: pointer; transition: background 0.2s;
         }
+        .month-header:active { background: #e2e8f0; }
         
         /* RIGHE COMPATTE */
         .list-row {
@@ -205,6 +209,10 @@
         details p, details ul { font-size: 0.85rem; color: var(--text-main); margin-top: 8px; padding-left: 10px; line-height: 1.4; }
         details ul li { margin-bottom: 6px; }
 
+        /* Stile Optgroup */
+        optgroup { font-weight: 800; font-style: normal; color: var(--primary); background-color: #f8fafc; }
+        optgroup option { font-weight: 600; color: var(--text-main); background-color: #ffffff; padding: 5px; }
+
     </style>
 </head>
 <body>
@@ -241,11 +249,11 @@
             <input type="text" id="searchInput" placeholder="Cerca nome o tipo..." onkeyup="window.renderRequests()">
         </div>
 
-        <div class="admin-tabs" id="adminTabs" style="display: none;">
-            <div class="admin-tab active" id="btnTabRichieste" onclick="window.switchTab('richieste')">
+        <div class="main-tabs" id="mainTabs">
+            <div class="main-tab active" id="btnTabRichieste" onclick="window.switchTab('richieste')">
                 <span class="material-icons-round" style="font-size:16px">list_alt</span> Richieste
             </div>
-            <div class="admin-tab" id="btnTabTurni" onclick="window.switchTab('turni')">
+            <div class="main-tab" id="btnTabTurni" onclick="window.switchTab('turni')">
                 <span class="material-icons-round" style="font-size:16px">calendar_month</span> Turni
             </div>
         </div>
@@ -348,20 +356,32 @@
                     <label>Tipo di Richiesta</label>
                     <select id="reqType" class="form-control" required>
                         <option value="" disabled selected>Seleziona tipo...</option>
-                        <option value="copertura_reperibilita">🛡 Copertura Reperibilità</option>
-                        <option value="ferie">🏖 Ferie</option>
-                        <option value="ferie_anno_prec">🏖 Ferie Anno Precedente</option>
-                        <option value="permesso_ore">⏱ Permesso Ore</option>
-                        <option value="permesso">⏱ Permesso</option>
-                        <option value="cambio_reperibilita">🔄 Cambio Reperibilità</option>
-                        <option value="cambio_turno">🔄 Cambio Turno</option>
-                        <option value="recupero_ore">⏳ Recupero Ore</option>
-                        <option value="permesso_matrimonio">💍 Permesso Matrimonio</option>
-                        <option value="permesso_studio">🎓 Permesso Studio</option>
-                        <option value="permesso_sportivo">⚽ Permesso Sportivo</option>
-                        <option value="permesso_notte">🌙 Permesso Notte</option>
-                        <option value="aspettativa">✈️ Aspettativa</option>
-                        <option value="permesso_lutto">⛪ Permesso Lutto</option>
+                        
+                        <optgroup label="🏖️ FERIE">
+                            <option value="ferie">Ferie</option>
+                            <option value="ferie_anno_prec">Ferie Anno Precedente</option>
+                        </optgroup>
+                        
+                        <optgroup label="⏱️ PERMESSI E RECUPERI">
+                            <option value="permesso_ore">Permesso Ore</option>
+                            <option value="permesso">Permesso</option>
+                            <option value="recupero_ore">Recupero Ore</option>
+                        </optgroup>
+                        
+                        <optgroup label="⚖️ PERMESSI SPECIALI">
+                            <option value="permesso_matrimonio">Permesso Matrimonio</option>
+                            <option value="permesso_studio">Permesso Studio</option>
+                            <option value="permesso_sportivo">Permesso Sportivo</option>
+                            <option value="permesso_notte">Permesso Notte</option>
+                            <option value="permesso_lutto">Permesso Lutto</option>
+                            <option value="aspettativa">Aspettativa</option>
+                        </optgroup>
+                        
+                        <optgroup label="🔄 CAMBI E COPERTURE">
+                            <option value="copertura_reperibilita">Copertura Reperibilità</option>
+                            <option value="cambio_reperibilita">Cambio Reperibilità</option>
+                            <option value="cambio_turno">Cambio Turno</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -778,7 +798,6 @@
             if(window.isAdmin) {
                 window.isAdmin = false;
                 document.getElementById('adminIcon').style.color = "white";
-                document.getElementById('adminTabs').style.display = "none";
                 window.switchTab('richieste');
                 alert("Uscito dalla modalità Admin.");
             } else {
@@ -786,7 +805,6 @@
                 if(pwd === "00") {
                     window.isAdmin = true;
                     document.getElementById('adminIcon').style.color = "#fde047";
-                    document.getElementById('adminTabs').style.display = "flex";
                     alert("Accesso Admin effettuato.");
                 } else if(pwd !== null) { alert("Password errata."); }
             }
@@ -863,6 +881,19 @@
             } catch(e) { console.error(e); }
         }
 
+        // Funzione per espandere/collassare i mesi
+        window.toggleMonth = function(id) {
+            const el = document.getElementById(id);
+            const icon = document.getElementById('icon_' + id);
+            if (el.style.display === 'none') {
+                el.style.display = 'block';
+                icon.textContent = 'expand_less';
+            } else {
+                el.style.display = 'none';
+                icon.textContent = 'expand_more';
+            }
+        };
+
         window.downloadJSON = function() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(requests, null, 2));
             const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
@@ -908,7 +939,7 @@
                                 <div class="row-content">
                                     <div class="row-header">
                                         <div class="row-title">${r.name}</div>
-                                        <div class="row-date-sent">Invio: ${sendDate}</div>
+                                        <div class="row-date-sent">Richiesta del: ${sendDate}</div>
                                     </div>
                                     <div class="row-details" style="color: #ef4444; font-weight: 700;">Richiesta Ritirata / Oscurata</div>
                                 </div>
@@ -953,7 +984,7 @@
                         <div class="row-content">
                             <div class="row-header">
                                 <div class="row-title">${adminTag}${r.name}</div>
-                                <div class="row-date-sent">Invio: ${sendDate}</div>
+                                <div class="row-date-sent">Richiesta del: ${sendDate}</div>
                             </div>
                             <div class="row-details">
                                 <span style="color:var(--text-sec);">Tipo:</span> <strong>${LABELS[r.type]}</strong> • <span style="color: var(--primary); font-weight:600;">${periodDetails}</span>
@@ -972,7 +1003,9 @@
             }
 
             if(otherRequests.length > 0) {
-                container.innerHTML += `<div class="section-title">Storico e Confermate</div>`;
+                // Linea Nera Divisoria
+                container.innerHTML += `<hr style="border: none; border-top: 2px solid #0f172a; margin: 25px 5px 15px 5px;">`;
+                
                 const groups = {};
                 const groupKeys = [];
                 
@@ -986,8 +1019,30 @@
                     groups[cap].push(r);
                 });
                 
+                // Controllo Mese Corrente
+                const currentMonthName = new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+                const capCurrent = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
+
+                let monthIndex = 0;
                 for (const month of groupKeys) {
-                    container.innerHTML += `<div class="month-group"><div class="month-header"><span class="material-icons-round" style="font-size:16px">calendar_month</span> Inserite a: ${month}</div>${groups[month].map(generateRow).join('')}</div>`;
+                    const isPastMonth = (month !== capCurrent); // Se non è il mese in corso, è passato (o futuro, ma lo trattiamo come da chiudere)
+                    const displayStyle = isPastMonth ? 'none' : 'block';
+                    const iconStr = isPastMonth ? 'expand_more' : 'expand_less';
+                    const containerId = `month_group_${monthIndex}`;
+                    
+                    container.innerHTML += `
+                        <div class="month-group">
+                            <div class="month-header" onclick="window.toggleMonth('${containerId}')">
+                                <div style="display:flex; align-items:center; gap:6px;">
+                                    <span class="material-icons-round" style="font-size:16px">calendar_month</span> Inserite a: ${month}
+                                </div>
+                                <span class="material-icons-round" id="icon_${containerId}" style="font-size: 20px;">${iconStr}</span>
+                            </div>
+                            <div id="${containerId}" style="display: ${displayStyle};">
+                                ${groups[month].map(generateRow).join('')}
+                            </div>
+                        </div>`;
+                    monthIndex++;
                 }
             }
         };
