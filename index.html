@@ -161,7 +161,7 @@
             font-size: 0.95rem; font-weight: 600; background: var(--bg); color: var(--text-main);
         }
         .form-control:focus { border-color: var(--primary); background: #fff; }
-        .form-control[readonly] { background: #e2e8f0; color: #64748b; cursor: not-allowed; }
+        .form-control:disabled { background: #e2e8f0; color: #64748b; opacity: 1; -webkit-text-fill-color: #64748b; }
         textarea.form-control { resize: vertical; min-height: 70px; }
         
         .btn-submit {
@@ -182,8 +182,9 @@
         .checkbox-wrapper { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 0.85rem; cursor: pointer; margin-bottom: 8px; }
         .checkbox-wrapper input { width: 18px; height: 18px; cursor: pointer; accent-color: var(--primary); }
         
-        .action-buttons { display: flex; gap: 8px; margin-top: 15px; }
-        .btn-action { flex: 1; padding: 10px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: white; }
+        .action-buttons { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        .btn-action { flex: 1; min-width: 100px; padding: 10px; border-radius: 10px; border: none; font-weight: 700; font-size: 0.85rem; cursor: pointer; color: white; }
+        .btn-edit { background: #3b82f6; }
         .btn-hide { background: #f59e0b; }
         .btn-delete { background: #ef4444; }
         .btn-restore { background: #10b981; }
@@ -212,7 +213,12 @@
         <div class="header-top">
             <div class="header-left">
                 <a href="area_autisti.html" class="btn-back"><span class="material-icons-round">arrow_back</span></a>
-                <div class="page-title">Gestione Richieste</div>
+                <div style="display: flex; flex-direction: column;">
+                    <div class="page-title">Gestione Richieste</div>
+                    <div id="loginStatusDisplay" style="display:none; font-size: 0.8rem; font-weight: 800; color: #fde047; margin-top: 2px;">
+                        LOGGATO COME: <span id="headerUserName" style="color: #ffffff; font-size: 0.95rem; font-weight: 900; text-transform: uppercase;"></span>
+                    </div>
+                </div>
             </div>
             <div class="header-right">
                 <button class="btn-icon" onclick="window.openModal('guide-modal')" title="Manuale">
@@ -273,9 +279,10 @@
                     <option value="Michelotti">Michelotti</option>
                     <option value="Volpini">Volpini</option>
                     <option value="Fabbri">Fabbri</option>
+                    <option value="Centrale 118">💻 Centrale 118 (Account Condiviso)</option>
                 </select>
             </div>
-            <p style="font-size:0.75rem; color:var(--text-sec); margin-bottom: 15px;">Il nome verrà salvato su questo dispositivo. Potrai operare solo a tuo nome.</p>
+            <p style="font-size:0.75rem; color:var(--text-sec); margin-bottom: 15px;">Il nome verrà salvato su questo dispositivo.</p>
             <button class="btn-submit" onclick="window.saveUserLogin()">SALVA ED ENTRA</button>
         </div>
     </div>
@@ -293,23 +300,22 @@
             <details>
                 <summary>Come stipulare una richiesta</summary>
                 <p>1. Clicca sul pulsante <span style="color:white; background:var(--primary); padding:2px 5px; border-radius:4px; font-size:10px;">+</span> in basso a destra.<br>
-                   2. Il tuo nome è già pre-impostato.<br>
-                   3. Seleziona il <strong>Tipo di Richiesta</strong> dal menu a tendina.<br>
-                   4. A seconda della richiesta, compila i campi richiesti (giorni, fasce orarie, con chi fai il cambio, ecc).<br>
-                   5. Clicca su <strong>INVIA RICHIESTA</strong>. La richiesta comparirà istantaneamente in bacheca.</p>
+                   2. Seleziona il <strong>Tipo di Richiesta</strong> dal menu a tendina.<br>
+                   3. Compila i campi richiesti (giorni, fasce orarie, con chi fai il cambio).<br>
+                   4. Clicca su <strong>INVIA RICHIESTA</strong>.</p>
+            </details>
+            <details>
+                <summary>Modificare una richiesta inviata</summary>
+                <p>Se hai commesso un errore o le tue necessità sono cambiate, clicca sulla tua richiesta dalla bacheca e premi il pulsante azzurro <strong>Modifica</strong>. 
+                <br><strong style="color:var(--primary);">Attenzione:</strong> Le richieste concluse (già inserite nei turni) possono essere modificate solo dall'amministratore.</p>
             </details>
             <details>
                 <summary>Approvazione Caposala & Standby</summary>
-                <p>Selezionando permessi, ferie o aspettative, la richiesta necessita dell'ok della caposala. Fino a quel momento la richiesta rimarrà evidenziata in giallo (in standby).<br>
-                <strong>Tutti gli operatori</strong> possono aprire il dettaglio della richiesta e aggiornare la spunta di approvazione non appena si conosce l'esito.</p>
+                <p>Ferie e permessi necessitano dell'ok della caposala. <strong>Tutti gli operatori</strong> possono aprire il dettaglio di una richiesta in attesa, selezionare l'esito dell'approvazione e cliccare "CONFERMA MODIFICHE" per salvare.</p>
             </details>
             <details>
-                <summary>Ritirare / Oscurare una richiesta</summary>
-                <p>Hai sbagliato o vuoi annullare una richiesta? Cliccaci sopra e premi <strong>Ritira / Oscura</strong>. Potrai farlo <u>solo per le tue richieste</u>. Le richieste oscurate saranno invisibili per i colleghi, ma l'amministratore potrà sempre vederle e recuperarle se necessario.</p>
-            </details>
-            <details>
-                <summary>Verificare direttamente i Turni</summary>
-                <p>Nel dettaglio di ogni richiesta, a fianco al periodo indicato, troverai l'icona <span class="material-icons-round" style="font-size:14px; vertical-align:middle;">event</span>. Cliccala per aprire direttamente la tabella dei turni in una nuova pagina.</p>
+                <summary>Inserimento nei Turni (Sfondo Verde)</summary>
+                <p>La richiesta rimarrà in alto a lampeggiare finché chi fa i turni non l'avrà fisicamente inserita a sistema. Solo a quel punto la richiesta diventerà con <strong>sfondo verde</strong>, scenderà nello storico e non sarà più modificabile dagli utenti normali.</p>
             </details>
         </div>
     </div>
@@ -317,14 +323,25 @@
     <div id="add-modal" class="modal-overlay" onclick="window.closeModal('add-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
-                <h3>Nuova Richiesta</h3>
+                <h3 id="modal-title-add">Nuova Richiesta</h3>
                 <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('add-modal')">close</span>
             </div>
             
             <form id="requestForm" onsubmit="window.saveRequest(event)">
                 <div class="form-group">
                     <label>Operatore</label>
-                    <input type="text" id="reqName" class="form-control" readonly>
+                    <select id="reqName" class="form-control" required>
+                        <option value="" disabled selected>Seleziona operatore...</option>
+                        <option value="Barbieri">Barbieri</option>
+                        <option value="Pazzaglia">Pazzaglia</option>
+                        <option value="Bianchi">Bianchi</option>
+                        <option value="Sarti">Sarti</option>
+                        <option value="Ghiotti">Ghiotti</option>
+                        <option value="Berardi">Berardi</option>
+                        <option value="Michelotti">Michelotti</option>
+                        <option value="Volpini">Volpini</option>
+                        <option value="Fabbri">Fabbri</option>
+                    </select>
                 </div>
                 
                 <div class="form-group">
@@ -374,12 +391,10 @@
                     </div>
                 </div>
 
-                <div class="form-group" id="approval-group" style="display:none; background:#f0fdfa; padding:12px; border-radius:10px; border:1px solid #ccfbf1;">
-                    <label style="color:#0f766e; margin-bottom: 8px;">La caposala deve sempre approvare questo tipo di richiesta</label>
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="attesa" checked> <span style="color:#64748b">⏳ In Attesa</span></label>
-                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="si"> <span style="color:#059669">✓ Approvato</span></label>
-                        <label class="checkbox-wrapper"><input type="radio" name="reqApproval" value="no"> <span style="color:#dc2626">✗ Rifiutato</span></label>
+                <div class="form-group" id="approval-group" style="display:none; background:#fef3c7; padding:12px; border-radius:10px; border:1px solid #fde68a;">
+                    <div style="color:#b45309; font-size:0.8rem; font-weight:700; line-height: 1.3;">
+                        ⚠️ La caposala dovrà approvare questo tipo di richiesta.
+                        <div style="font-weight:500; margin-top:4px; font-size:0.75rem;">Potrai aggiornare lo stato dell'approvazione successivamente aprendo il dettaglio della richiesta.</div>
                     </div>
                 </div>
 
@@ -460,9 +475,15 @@
         const db = getFirestore(app);
 
         window.isAdmin = false;
+        window.editingId = null; 
         let requests = []; 
         let savedNotes = [];
         let currentUser = localStorage.getItem('118_user_name');
+
+        function updateHeaderName(name) {
+            document.getElementById('headerUserName').textContent = name;
+            document.getElementById('loginStatusDisplay').style.display = 'block';
+        }
 
         // Check Login al caricamento
         window.addEventListener('DOMContentLoaded', () => {
@@ -470,6 +491,8 @@
                 document.getElementById('login-modal').style.display = 'flex';
                 document.getElementById('login-modal').style.opacity = '1';
                 document.getElementById('login-modal').style.zIndex = '9999';
+            } else {
+                updateHeaderName(currentUser);
             }
         });
 
@@ -478,6 +501,7 @@
             if (!name) { alert("Seleziona il tuo nome prima di procedere."); return; }
             localStorage.setItem('118_user_name', name);
             currentUser = name;
+            updateHeaderName(currentUser);
             document.getElementById('login-modal').style.display = 'none';
         };
 
@@ -521,18 +545,14 @@
         window.renderNotes = function() {
             const container = document.getElementById('notes-list');
             container.innerHTML = "";
-            
             if (savedNotes.length === 0) {
                 container.innerHTML = `<div style="text-align:center; padding:15px; color:var(--text-sec); font-size:0.8rem;">Nessuna nota presente. Sii il primo a scriverne una!</div>`;
                 return;
             }
-
             savedNotes.forEach(n => {
                 const dateObj = n.timestamp ? new Date(n.timestamp) : new Date();
                 const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                
                 const deleteBtn = window.isAdmin ? `<span class="material-icons-round" style="font-size:16px; color:#ef4444; cursor:pointer;" onclick="window.deleteNote('${n.id}')" title="Elimina">delete</span>` : '';
-
                 container.innerHTML += `
                     <div style="background: #fef9c3; padding: 10px 12px; border-radius: 8px; border: 1px solid #fde047;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
@@ -540,25 +560,18 @@
                             ${deleteBtn}
                         </div>
                         <div style="font-size: 0.85rem; color: #451a03; white-space: pre-wrap;">${n.testo}</div>
-                    </div>
-                `;
+                    </div>`;
             });
         };
 
         window.saveNotes = async function() {
             const text = document.getElementById('appNotesText').value.trim();
             if (!text) { alert("Scrivi qualcosa prima di aggiungere la nota!"); return; }
-            
             const btn = document.getElementById('btnSaveNotes');
             const originalText = btn.textContent;
             btn.textContent = "AGGIUNTA IN CORSO...";
-            
             try {
-                await addDoc(collection(db, "note_migliorative"), { 
-                    testo: text,
-                    timestamp: new Date().toISOString()
-                });
-                
+                await addDoc(collection(db, "note_migliorative"), { testo: text, timestamp: new Date().toISOString() });
                 document.getElementById('appNotesText').value = ""; 
                 btn.textContent = "AGGIUNTO CON SUCCESSO!";
                 setTimeout(() => btn.textContent = originalText, 1500);
@@ -571,8 +584,7 @@
 
         window.deleteNote = async function(id) {
             if(confirm("Eliminare definitivamente questa nota?")) {
-                try { await deleteDoc(doc(db, "note_migliorative", id)); } 
-                catch (error) { console.error(error); }
+                try { await deleteDoc(doc(db, "note_migliorative", id)); } catch (error) { console.error(error); }
             }
         };
 
@@ -597,9 +609,60 @@
         };
 
         window.openAddModal = function() {
-            document.getElementById('reqName').value = currentUser; // Pre-imposta il nome dell'utente
+            window.editingId = null; 
+            document.getElementById('modal-title-add').textContent = "Nuova Richiesta";
+            document.getElementById('requestForm').reset();
+            document.getElementById('btnSubmit').textContent = "INVIA RICHIESTA";
+            
+            const nameSelect = document.getElementById('reqName');
+            if (currentUser === 'Centrale 118' || window.isAdmin) {
+                nameSelect.disabled = false;
+                nameSelect.value = ""; 
+            } else {
+                nameSelect.value = currentUser;
+                nameSelect.disabled = true; 
+            }
+            
+            document.getElementById('reqType').dispatchEvent(new Event('change'));
             window.openModal('add-modal');
         };
+
+        window.editRequest = function(id) {
+            const r = requests.find(x => x.id === id);
+            if(!r) return;
+            
+            window.editingId = id;
+            window.closeModal('detail-modal');
+            
+            document.getElementById('modal-title-add').textContent = "Modifica Richiesta";
+            const nameSelect = document.getElementById('reqName');
+            
+            if (currentUser === 'Centrale 118' || window.isAdmin) {
+                nameSelect.disabled = false;
+            } else {
+                nameSelect.disabled = true;
+            }
+            nameSelect.value = r.name;
+            
+            document.getElementById('reqType').value = r.type;
+            document.getElementById('reqType').dispatchEvent(new Event('change')); 
+            
+            if(r.swapWith) document.getElementById('reqNameSwap').value = r.swapWith;
+            if(r.dateFrom) document.getElementById('reqDateFrom').value = r.dateFrom;
+            if(r.dateTo && r.dateTo !== r.dateFrom) document.getElementById('reqDateTo').value = r.dateTo;
+            if(r.effectiveDays && r.effectiveDays !== "N/A") document.getElementById('reqDays').value = r.effectiveDays;
+            if(r.notes) document.getElementById('reqNotes').value = r.notes;
+            
+            if(r.type === 'copertura_reperibilita' && r.timeSlot) {
+                const slots = r.timeSlot.split(", ");
+                document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => {
+                    cb.checked = slots.includes(cb.value);
+                });
+            }
+            
+            document.getElementById('btnSubmit').textContent = "SALVA MODIFICHE";
+            window.openModal('add-modal');
+        }
 
         document.getElementById('reqType').addEventListener('change', function(e) {
             const val = e.target.value;
@@ -636,7 +699,6 @@
             }
         });
 
-        // ORDINAMENTO DAL DATABASE PER TIMESTAMP DI INSERIMENTO
         onSnapshot(query(collection(db, "richieste_turni"), orderBy("timestamp", "desc")), (snapshot) => {
             requests = []; snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
             window.renderRequests();
@@ -645,7 +707,7 @@
         window.saveRequest = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.textContent = "INVIO..."; 
+            btn.textContent = "SALVATAGGIO..."; 
             btn.style.opacity = "0.7";
             
             try {
@@ -659,42 +721,54 @@
                     const checkboxes = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
                     if(checkboxes.length === 0) {
                         alert("Devi spuntare almeno una fascia.");
-                        btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1";
+                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA"; btn.style.opacity = "1";
                         return;
                     }
                     selectedTimeSlots = Array.from(checkboxes).map(cb => cb.value).join(", ");
                 }
 
-                let approvalStatus = 'non_richiesta';
-                if(APPROVAL_TYPES.includes(reqType)) {
-                    approvalStatus = document.querySelector('input[name="reqApproval"]:checked').value;
+                if (window.editingId) {
+                    const updateData = {
+                        name: document.getElementById('reqName').value,
+                        type: reqType,
+                        swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
+                        timeSlot: selectedTimeSlots,
+                        dateFrom: dFrom,
+                        dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                        effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                        notes: document.getElementById('reqNotes').value.trim(),
+                        headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
+                        insertedInShifts: false,
+                        insertedAt: null
+                    };
+                    await updateDoc(doc(db, "richieste_turni", window.editingId), updateData);
+                } else {
+                    const newReq = {
+                        timestamp: new Date().toISOString(),
+                        name: document.getElementById('reqName').value,
+                        type: reqType,
+                        swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
+                        timeSlot: selectedTimeSlots,
+                        dateFrom: dFrom,
+                        dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                        effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                        notes: document.getElementById('reqNotes').value.trim(),
+                        insertedInShifts: false,
+                        insertedAt: null,
+                        headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
+                        obscured: false
+                    };
+                    await addDoc(collection(db, "richieste_turni"), newReq);
                 }
-
-                const newReq = {
-                    timestamp: new Date().toISOString(),
-                    name: document.getElementById('reqName').value,
-                    type: reqType,
-                    swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
-                    timeSlot: selectedTimeSlots,
-                    dateFrom: dFrom,
-                    dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                    effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
-                    notes: document.getElementById('reqNotes').value.trim(),
-                    insertedInShifts: false,
-                    insertedAt: null,
-                    headNurseApproval: approvalStatus,
-                    obscured: false
-                };
-
-                await addDoc(collection(db, "richieste_turni"), newReq);
                 
                 document.getElementById('requestForm').reset();
+                window.editingId = null;
                 document.getElementById('reqType').dispatchEvent(new Event('change'));
                 window.closeModal('add-modal');
                 if(navigator.vibrate) navigator.vibrate(50);
                 
             } catch (error) { 
-                console.error(error); alert("Errore durante l'invio."); 
+                console.error(error); alert("Errore durante il salvataggio."); 
             } finally { 
                 btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1"; 
             }
@@ -739,18 +813,43 @@
             catch (error) { console.error(error); }
         };
 
-        window.updateStatus = async function(id, field, value) {
-            try {
-                const updateData = { [field]: value };
-                if (field === 'insertedInShifts') {
-                    updateData.insertedAt = value ? new Date().toISOString() : null;
+        // --- SALVATAGGIO MANUALE DETTAGLI (Caposala / Admin) ---
+        window.saveDetailChanges = async function(id) {
+            const r = requests.find(x => x.id === id);
+            if (!r) return;
+            
+            let updateData = {};
+            let hasChanges = false;
+            
+            if (APPROVAL_TYPES.includes(r.type)) {
+                const capoEl = document.querySelector(`input[name="capo_${id}"]:checked`);
+                if (capoEl && capoEl.value !== r.headNurseApproval) {
+                    updateData.headNurseApproval = capoEl.value;
+                    hasChanges = true;
                 }
-                await updateDoc(doc(db, "richieste_turni", id), updateData);
-                
-                if (document.getElementById('detail-modal').classList.contains('open')) {
-                    setTimeout(() => window.openDetailModal(id), 200); 
+            }
+            
+            if (window.isAdmin) {
+                const insertEl = document.getElementById(`check_insert_${id}`);
+                if (insertEl && insertEl.checked !== r.insertedInShifts) {
+                    updateData.insertedInShifts = insertEl.checked;
+                    updateData.insertedAt = insertEl.checked ? new Date().toISOString() : null;
+                    hasChanges = true;
                 }
-            } catch (error) { console.error(error); }
+            }
+            
+            if (hasChanges) {
+                try {
+                    await updateDoc(doc(db, "richieste_turni", id), updateData);
+                    window.closeModal('detail-modal');
+                    if(navigator.vibrate) navigator.vibrate(50);
+                } catch (error) {
+                    console.error(error);
+                    alert("Errore nel salvataggio.");
+                }
+            } else {
+                window.closeModal('detail-modal');
+            }
         };
 
         window.toggleInserted = async function(id, currentState) {
@@ -782,7 +881,13 @@
                 container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>Nessuna richiesta</h3></div>`; return;
             }
 
-            const isPending = (r) => !r.obscured && ((APPROVAL_TYPES.includes(r.type) && r.headNurseApproval === 'attesa') || (!APPROVAL_TYPES.includes(r.type) && !r.insertedInShifts));
+            // Una richiesta è "Pending" se NON è oscurata, NON è stata rifiutata e NON è stata ancora inserita nei turni
+            const isPending = (r) => {
+                if (r.obscured) return false;
+                if (r.headNurseApproval === 'no') return false; 
+                if (r.insertedInShifts) return false; 
+                return true; 
+            };
             
             const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
             const otherRequests = filtered.filter(r => !isPending(r)).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
@@ -796,7 +901,7 @@
                 let rowClass = "";
                 
                 if(r.obscured) {
-                    if(!window.isAdmin) {
+                    if(!window.isAdmin && currentUser !== 'Centrale 118') {
                         return `
                             <div class="list-row row-obscured" onclick="window.openDetailModal('${r.id}')">
                                 <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:18px">visibility_off</span></div>
@@ -813,12 +918,12 @@
                 }
 
                 if(!r.obscured) {
-                    if(APPROVAL_TYPES.includes(r.type)) {
-                        if(r.headNurseApproval === 'attesa') rowClass = "row-pending";
-                        else if(r.headNurseApproval === 'si') rowClass = "row-confirmed";
-                        else if(r.headNurseApproval === 'no') rowClass = "row-rejected";
-                    } else if(r.insertedInShifts) { 
+                    if (r.headNurseApproval === 'no') {
+                        rowClass = "row-rejected";
+                    } else if (r.insertedInShifts) {
                         rowClass = "row-confirmed"; 
+                    } else {
+                        rowClass = "row-pending"; 
                     }
                 }
 
@@ -833,7 +938,7 @@
                 if(r.type === 'copertura_reperibilita' && r.timeSlot) periodDetails += ` (${r.timeSlot})`;
                 if(r.swapWith) periodDetails += ` (con ${r.swapWith})`;
 
-                const adminTag = (r.obscured && window.isAdmin) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
+                const adminTag = (r.obscured && (window.isAdmin || currentUser === 'Centrale 118')) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
 
                 const insertButton = (!r.obscured && window.isAdmin) ? `
                     <button class="btn-quick-insert ${r.insertedInShifts ? 'inserted' : ''}" onclick="event.stopPropagation(); window.toggleInserted('${r.id}', ${r.insertedInShifts})">
@@ -900,11 +1005,10 @@
 
         window.openDetailModal = function(id) {
             const r = requests.find(x => x.id === id);
-            if(!r || (r.obscured && !window.isAdmin)) return; 
+            if(!r || (r.obscured && !window.isAdmin && currentUser !== 'Centrale 118')) return; 
 
             let html = ``;
             
-            // LA DATA È ORA SOLO TESTO (NESSUN INPUT ADMIN PER MODIFICARLA)
             html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
                         <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
                         <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
@@ -929,11 +1033,14 @@
             const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
             const periodStr = r.type === 'copertura_reperibilita' || dFrom === dTo ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
             
+            // LINK VERSO I TURNI (PASSAGGIO DATA TRAMITE URL)
+            const urlTurni = `https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/?date=${r.dateFrom}#${r.dateFrom}`;
+
             html += `<div class="detail-item">
                         <div class="detail-label">Periodo</div>
                         <div style="display:flex; justify-content:space-between; align-items:center;">
                             <div class="detail-value">${periodStr}</div>
-                            <a href="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" target="_blank" class="btn-icon" style="background:var(--primary);color:white;width:30px;height:30px;" title="Apri i Turni">
+                            <a href="${urlTurni}" target="_blank" class="btn-icon" style="background:var(--primary);color:white;width:30px;height:30px;" title="Apri Turni per questa data">
                                 <span class="material-icons-round" style="font-size:18px;">event</span>
                             </a>
                         </div>
@@ -943,52 +1050,78 @@
             
             html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>`;
 
-            // SEZIONE CAPOSALA ORA APERTA A TUTTI (E INCLUSA NELLE NUOVE RICHIESTE)
+            let hasApprovableOrAdminControls = false;
+
             if (APPROVAL_TYPES.includes(r.type)) {
-                html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                            <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">La caposala deve sempre approvare questo tipo di richiesta</div>
-                            <div style="display: flex; flex-direction: column; gap: 10px;">
-                                <label class="checkbox-wrapper">
-                                    <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                    <span style="color: #059669;">Sì, Approvato</span>
-                                </label>
-                                <label class="checkbox-wrapper">
-                                    <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                    <span style="color: #dc2626;">No, Rifiutato</span>
-                                </label>
-                                <label class="checkbox-wrapper">
-                                    <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'headNurseApproval', this.value)">
-                                    <span style="color: #64748b;">In Attesa</span>
-                                </label>
-                            </div>
-                         </div>`;
+                if (window.isAdmin || !r.insertedInShifts) {
+                    hasApprovableOrAdminControls = true;
+                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">La caposala deve sempre approvare questo tipo di richiesta</div>
+                                <div style="display: flex; flex-direction: column; gap: 10px;">
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''}>
+                                        <span style="color: #059669;">Sì, Approvato</span>
+                                    </label>
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''}>
+                                        <span style="color: #dc2626;">No, Rifiutato</span>
+                                    </label>
+                                    <label class="checkbox-wrapper">
+                                        <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''}>
+                                        <span style="color: #64748b;">In Attesa</span>
+                                    </label>
+                                </div>
+                             </div>`;
+                } else {
+                    // Sola lettura per la caposala se la richiesta è già "Conclusa" e non sei admin
+                    let stateStr = "In Attesa";
+                    let stateColor = "#64748b";
+                    if(r.headNurseApproval === 'si') { stateStr = "Sì, Approvato"; stateColor = "#059669"; }
+                    if(r.headNurseApproval === 'no') { stateStr = "No, Rifiutato"; stateColor = "#dc2626"; }
+                    
+                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
+                                <div class="detail-label" style="margin-bottom:5px; color: var(--primary);">Approvazione Caposala</div>
+                                <div style="font-weight: 800; font-size: 0.95rem; color: ${stateColor};">${stateStr}</div>
+                             </div>`;
+                }
             }
 
             if (window.isAdmin) {
+                hasApprovableOrAdminControls = true;
                 html += `<div class="admin-controls">
                             <h4>Gestione Turni (Solo Admin)</h4>
                             <div style="margin-bottom: 10px;">
                                 <label class="checkbox-wrapper">
-                                    <input type="checkbox" ${r.insertedInShifts ? 'checked' : ''} onchange="window.updateStatus('${r.id}', 'insertedInShifts', this.checked)"> 
+                                    <input type="checkbox" id="check_insert_${r.id}" ${r.insertedInShifts ? 'checked' : ''}> 
                                     Segna come "Inserita nei turni"
                                 </label>
                             </div>
                          </div>`;
             }
 
-            html += `<div class="action-buttons">`;
+            // TASTO CONFERMA DEDICATO (mostrato solo se ci sono impostazioni da salvare)
+            if (hasApprovableOrAdminControls && !r.obscured) {
+                html += `<button class="btn-submit" style="background:#10b981; margin-top:15px; width:100%; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="window.saveDetailChanges('${r.id}')">CONFERMA MODIFICHE</button>`;
+            }
+
+            html += `<div class="action-buttons" style="margin-top:20px;">`;
             if(r.obscured) {
-                if(window.isAdmin) {
+                if(window.isAdmin || currentUser === 'Centrale 118') {
                     html += `<button class="btn-action btn-restore" onclick="window.restoreRequest('${r.id}')">Ripristina</button>`;
-                    html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                    if(window.isAdmin) html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
                 }
             } else {
-                // Può oscurare solo chi l'ha creata (oppure l'admin)
-                if (r.name === currentUser || window.isAdmin) {
-                    html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira / Oscura</button>`;
-                }
-                if(window.isAdmin) {
+                const isConcluded = r.insertedInShifts; // Logica: la richiesta è conclusa se inserita
+                
+                if (window.isAdmin) {
+                    html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica Richiesta</button>`;
+                    html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira</button>`;
                     html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                } else if (!isConcluded) {
+                    if (r.name === currentUser || currentUser === 'Centrale 118') {
+                        html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica Richiesta</button>`;
+                        html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira</button>`;
+                    }
                 }
             }
             html += `</div>`;
