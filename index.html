@@ -305,6 +305,8 @@
                 <span class="material-icons-round" style="cursor:pointer; color:var(--text-sec)" onclick="window.closeModal('guide-modal')">close</span>
             </div>
             
+            <img src="istruzioni.jpg" alt="Istruzioni d'uso" style="width: 100%; height: auto; border-radius: 10px; margin-bottom: 15px; border: 1px solid var(--border); box-shadow: var(--shadow);">
+            
             <details>
                 <summary>Come stipulare una richiesta</summary>
                 <p>1. Clicca sul pulsante <span style="color:white; background:var(--primary); padding:2px 5px; border-radius:4px; font-size:10px;">+</span> in basso a destra.<br>
@@ -505,7 +507,7 @@
             document.getElementById('loginStatusDisplay').style.display = 'block';
         }
 
-        // Check Login al caricamento
+        // Check Login al caricamento ed eventuali Istruzioni
         window.addEventListener('DOMContentLoaded', () => {
             if (!currentUser) {
                 document.getElementById('login-modal').style.display = 'flex';
@@ -513,8 +515,20 @@
                 document.getElementById('login-modal').style.zIndex = '9999';
             } else {
                 updateHeaderName(currentUser);
+                checkFirstVisitAndShowGuide(); // Verifica se è la prima volta che entra
             }
         });
+
+        // Funzione per verificare se è la prima apertura del dispositivo
+        function checkFirstVisitAndShowGuide() {
+            if (!localStorage.getItem('118_istruzioni_viste')) {
+                // Piccolo ritardo per rendere l'animazione più fluida dopo il caricamento/login
+                setTimeout(() => {
+                    window.openModal('guide-modal');
+                    localStorage.setItem('118_istruzioni_viste', 'true');
+                }, 500);
+            }
+        }
 
         window.saveUserLogin = function() {
             const name = document.getElementById('loginSelectName').value;
@@ -522,7 +536,14 @@
             localStorage.setItem('118_user_name', name);
             currentUser = name;
             updateHeaderName(currentUser);
-            document.getElementById('login-modal').style.display = 'none';
+            
+            // Chiude il login e controlla se mostrare le istruzioni
+            const loginModal = document.getElementById('login-modal');
+            loginModal.style.opacity = '0';
+            setTimeout(() => {
+                loginModal.style.display = 'none';
+                checkFirstVisitAndShowGuide();
+            }, 300);
         };
 
         const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore', 'permesso_matrimonio', 'permesso_studio', 'permesso_sportivo', 'permesso_notte', 'aspettativa', 'permesso_lutto'];
