@@ -1132,7 +1132,7 @@
                 if (window.isAdmin || !r.insertedInShifts) {
                     hasApprovableOrAdminControls = true;
                     html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">Il coordinatore deve sempre approvare questo tipo di richiesta</div>
+                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">La figura di coordinamento deve sempre approvare questo tipo di richiesta</div>
                                 <div style="display: flex; flex-direction: column; gap: 10px;">
                                     <label class="checkbox-wrapper">
                                         <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''}>
