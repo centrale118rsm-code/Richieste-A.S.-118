@@ -403,6 +403,16 @@
                     </select>
                 </div>
 
+                <!-- NUOVO: avviso specifico per Cambio Turno -->
+                <div id="cambio-turno-info" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:14px;">
+                    <div style="display:flex; gap:8px; align-items:flex-start;">
+                        <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
+                        <div style="color:#1e40af; font-size:0.8rem; font-weight:600; line-height:1.5;">
+                            L'orario presente nella casella dei turni, sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
                     <label style="color:#4338ca; margin-bottom: 8px;">Fasce di Reperibilità</label>
                     <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -714,10 +724,12 @@
             const dateToGroup = document.getElementById('date-to-group');
             const daysGroup = document.getElementById('days-group');
             const labelDateFrom = document.getElementById('labelDateFrom');
+            const cambioTurnoInfo = document.getElementById('cambio-turno-info');
 
             swapGroup.style.display = 'none'; swapInput.required = false;
             timeSlotGroup.style.display = 'none'; 
             approvalGroup.style.display = 'none'; 
+            cambioTurnoInfo.style.display = 'none';
             document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
             
             dateToGroup.style.display = 'block'; daysGroup.style.display = 'block';
@@ -726,6 +738,10 @@
             if(val === 'cambio_turno' || val === 'cambio_reperibilita' || val === 'copertura_reperibilita') {
                 swapGroup.style.display = 'block';
                 swapInput.required = true;
+            }
+
+            if(val === 'cambio_turno') {
+                cambioTurnoInfo.style.display = 'block';
             }
 
             if(val === 'copertura_reperibilita') {
@@ -1125,6 +1141,18 @@
             if(r.type !== 'copertura_reperibilita') html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
             
             html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>`;
+
+            // Nota informativa nel dettaglio per Cambio Turno
+            if(r.type === 'cambio_turno') {
+                html += `<div style="background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:15px;">
+                            <div style="display:flex; gap:8px; align-items:flex-start;">
+                                <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
+                                <div style="color:#1e40af; font-size:0.8rem; font-weight:600; line-height:1.5;">
+                                    L'orario presente nella casella dei turni, sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
+                                </div>
+                            </div>
+                         </div>`;
+            }
 
             let hasApprovableOrAdminControls = false;
 
