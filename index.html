@@ -55,7 +55,7 @@
         .search-container input:focus { background: rgba(255,255,255,0.3); outline: none; }
         .search-container .material-icons-round { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); font-size: 20px; color: rgba(255,255,255,0.8); }
 
-        /* --- MAIN TABS (VISIBILI A TUTTI) --- */
+        /* --- MAIN TABS --- */
         .main-tabs { display: flex; gap: 8px; margin-top: 12px; }
         .main-tab { 
             flex: 1; text-align: center; padding: 10px 8px; font-weight: 800; font-size: 0.75rem; text-transform: uppercase;
@@ -74,7 +74,6 @@
         .section-title { font-size: 0.8rem; font-weight: 900; color: var(--primary); text-transform: uppercase; letter-spacing: 1px; margin: 15px 0 8px 5px; }
         .month-group { margin-bottom: 16px; background: var(--bg-card); border-radius: 12px; border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden; }
         
-        /* HEADER MESE MODIFICATO PER CLICK */
         .month-header {
             background: #f1f5f9; padding: 10px 12px;
             font-size: 0.75rem; font-weight: 800; color: var(--text-sec);
@@ -117,7 +116,7 @@
         .empty-state { text-align: center; padding: 30px 20px; color: var(--text-sec); }
         .empty-state .material-icons-round { font-size: 40px; opacity: 0.5; margin-bottom: 8px; }
 
-        /* PULSANTE RAPIDO INSERIMENTO TURNI COMPATTO */
+        /* PULSANTE RAPIDO INSERIMENTO TURNI */
         .btn-quick-insert {
             display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px;
             border-radius: 6px; border: 1px solid var(--border); background: #ffffff;
@@ -193,6 +192,7 @@
         .btn-delete { background: #ef4444; }
         .btn-restore { background: #10b981; }
 
+        /* Colori badge tipo richiesta */
         .bg-copertura { background: #e0e7ff; color: #4338ca; }
         .bg-ferie { background: #ffedd5; color: #c2410c; }
         .bg-ferie-prec { background: #ffedd5; color: #9a3412; }
@@ -212,7 +212,6 @@
         /* Stile Optgroup */
         optgroup { font-weight: 800; font-style: normal; color: var(--primary); background-color: #f8fafc; }
         optgroup option { font-weight: 600; color: var(--text-main); background-color: #ffffff; padding: 5px; }
-
     </style>
 </head>
 <body>
@@ -269,6 +268,7 @@
         <span class="material-icons-round">add</span>
     </button>
 
+    <!-- MODAL LOGIN -->
     <div id="login-modal" class="modal-overlay">
         <div class="modal-content" style="border-radius: 20px; transform: translateY(0); margin: 20px; align-self: center;">
             <div class="modal-header">
@@ -295,6 +295,7 @@
         </div>
     </div>
 
+    <!-- MODAL GUIDA -->
     <div id="guide-modal" class="modal-overlay" onclick="window.closeModal('guide-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -321,7 +322,7 @@
             </details>
             <details>
                 <summary>Approvazione Caposala & Standby</summary>
-                <p>Tutte richieste di assenza devono essere preventivamente valutate e autorizzate dalla figura di coordinamento <strong>Tutti gli operatori</strong> possono aprire il dettaglio di una richiesta in attesa, selezionare l'esito dell'approvazione e cliccare "CONFERMA MODIFICHE" per salvare.</p>
+                <p>Tutte richieste di assenza devono essere preventivamente valutate e autorizzate dalla figura di coordinamento. <strong>Tutti gli operatori</strong> possono aprire il dettaglio di una richiesta in attesa, selezionare l'esito dell'approvazione e cliccare "CONFERMA MODIFICHE" per salvare.</p>
             </details>
             <details>
                 <summary>Inserimento nei Turni (Sfondo Verde)</summary>
@@ -330,6 +331,7 @@
         </div>
     </div>
 
+    <!-- MODAL AGGIUNGI / MODIFICA -->
     <div id="add-modal" class="modal-overlay" onclick="window.closeModal('add-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -359,14 +361,15 @@
                     <select id="reqType" class="form-control" required>
                         <option value="" disabled selected>Seleziona tipo...</option>
                         
-                        <optgroup label="🏖️ FERIE">
-                            <option value="congedo_ordinario">Congedo ordinario</option>
-                            <option value="congedo_ordinario_anno_precedente">Congedo ordinario anno precedente</option>
+                        <!-- ⚠️ I value corrispondono ESATTAMENTE alle chiavi in LABELS/ICONS/COLORS -->
+                        <optgroup label="🏖️ FERIE / CONGEDO">
+                            <option value="ferie">Congedo ordinario</option>
+                            <option value="ferie_anno_prec">Congedo ordinario anno precedente</option>
                         </optgroup>
                         
                         <optgroup label="⏱️ PERMESSI E RECUPERI">
-                            <option value="permesso_speciale_a_ore">Permesso speciale a ore</option>
-                            <option value="permesso_speciale">Permesso speciale</option>
+                            <option value="permesso_ore">Permesso speciale a ore</option>
+                            <option value="permesso">Permesso speciale</option>
                             <option value="recupero_ore">Recupero Ore</option>
                         </optgroup>
                         
@@ -386,6 +389,7 @@
                     </select>
                 </div>
 
+                <!-- Con chi fai il cambio -->
                 <div class="form-group" id="swap-group" style="display:none; background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
                     <label>Con chi fai il cambio?</label>
                     <select id="reqNameSwap" class="form-control">
@@ -402,7 +406,7 @@
                     </select>
                 </div>
 
-                <!-- NUOVO: avviso specifico per Cambio Turno -->
+                <!-- Info Cambio Turno -->
                 <div id="cambio-turno-info" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:14px;">
                     <div style="display:flex; gap:8px; align-items:flex-start;">
                         <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
@@ -412,6 +416,7 @@
                     </div>
                 </div>
 
+                <!-- Fasce reperibilità -->
                 <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
                     <label style="color:#4338ca; margin-bottom: 8px;">Fasce di Reperibilità</label>
                     <div style="display: flex; flex-direction: column; gap: 4px;">
@@ -422,6 +427,7 @@
                     </div>
                 </div>
 
+                <!-- Avviso approvazione -->
                 <div class="form-group" id="approval-group" style="display:none; background:#fef3c7; padding:12px; border-radius:10px; border:1px solid #fde68a;">
                     <div style="color:#b45309; font-size:0.8rem; font-weight:700; line-height: 1.3;">
                         ⚠️ Tutte richieste di assenza devono essere preventivamente valutate e autorizzate dalla figura di coordinamento ⚠️
@@ -455,6 +461,7 @@
         </div>
     </div>
 
+    <!-- MODAL NOTE -->
     <div id="notes-modal" class="modal-overlay" onclick="window.closeModal('notes-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -473,12 +480,12 @@
 
             <div id="notes-list-container" style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 15px;">
                 <h4 style="font-size: 0.8rem; color: var(--text-sec); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px;">Bacheca Note Salvate</h4>
-                <div id="notes-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;">
-                    </div>
+                <div id="notes-list" style="display: flex; flex-direction: column; gap: 10px; max-height: 250px; overflow-y: auto;"></div>
             </div>
         </div>
     </div>
 
+    <!-- MODAL DETTAGLIO -->
     <div id="detail-modal" class="modal-overlay" onclick="window.closeModal('detail-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header">
@@ -491,7 +498,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMX2ycf_6P3AcBvarVX4XNKbdposkuqgE",
@@ -506,32 +513,102 @@
         const db = getFirestore(app);
 
         window.isAdmin = false;
-        window.editingId = null; 
-        let requests = []; 
+        window.editingId = null;
+        let requests = [];
         let savedNotes = [];
         let currentUser = localStorage.getItem('118_user_name');
 
+        // ============================================================
+        // DIZIONARI — le chiavi corrispondono ESATTAMENTE ai value del <select>
+        // ============================================================
+        const LABELS = {
+            "copertura_reperibilita": "Cessione Reperibilità",
+            "cambio_turno":           "Cambio Turno",
+            "ferie":                  "Congedo Ordinario",
+            "ferie_anno_prec":        "Congedo Anno Precedente",
+            "permesso_ore":           "Permesso Speciale a Ore",
+            "permesso":               "Permesso Speciale",
+            "recupero_ore":           "Recupero Ore",
+            "permesso_matrimonio":    "Permesso Matrimonio",
+            "permesso_studio":        "Permesso Studio",
+            "permesso_sportivo":      "Permesso Sportivo",
+            "permesso_notte":         "Permesso Notte",
+            "permesso_lutto":         "Permesso Lutto",
+            "aspettativa":            "Aspettativa"
+        };
+
+        const ICONS = {
+            "copertura_reperibilita": "shield",
+            "cambio_turno":           "swap_horiz",
+            "ferie":                  "beach_access",
+            "ferie_anno_prec":        "history",
+            "permesso_ore":           "schedule",
+            "permesso":               "timer",
+            "recupero_ore":           "hourglass_empty",
+            "permesso_matrimonio":    "favorite",
+            "permesso_studio":        "school",
+            "permesso_sportivo":      "sports_soccer",
+            "permesso_notte":         "nights_stay",
+            "permesso_lutto":         "church",
+            "aspettativa":            "flight_takeoff"
+        };
+
+        const COLORS = {
+            "copertura_reperibilita": "bg-copertura",
+            "cambio_turno":           "bg-cambio-turno",
+            "ferie":                  "bg-ferie",
+            "ferie_anno_prec":        "bg-ferie-prec",
+            "permesso_ore":           "bg-permesso-ore",
+            "permesso":               "bg-permesso",
+            "recupero_ore":           "bg-recupero",
+            "permesso_matrimonio":    "bg-permesso",
+            "permesso_studio":        "bg-permesso",
+            "permesso_sportivo":      "bg-permesso",
+            "permesso_notte":         "bg-permesso",
+            "permesso_lutto":         "bg-default",
+            "aspettativa":            "bg-ferie"
+        };
+
+        // Tipi che richiedono approvazione caposala
+        const APPROVAL_TYPES = [
+            'ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso',
+            'recupero_ore', 'permesso_matrimonio', 'permesso_studio',
+            'permesso_sportivo', 'permesso_notte', 'aspettativa', 'permesso_lutto'
+        ];
+
+        // Helper: label sicura anche per vecchie chiavi non presenti
+        function getLabel(type) {
+            return LABELS[type] || type || "—";
+        }
+        function getIcon(type) {
+            return ICONS[type] || "help_outline";
+        }
+        function getColor(type) {
+            return COLORS[type] || "bg-default";
+        }
+
+        // ============================================================
+        // HEADER / LOGIN
+        // ============================================================
         function updateHeaderName(name) {
             document.getElementById('headerUserName').textContent = name;
             document.getElementById('loginStatusDisplay').style.display = 'block';
         }
 
-        // Check Login al caricamento ed eventuali Istruzioni
         window.addEventListener('DOMContentLoaded', () => {
             if (!currentUser) {
-                document.getElementById('login-modal').style.display = 'flex';
-                document.getElementById('login-modal').style.opacity = '1';
-                document.getElementById('login-modal').style.zIndex = '9999';
+                const lm = document.getElementById('login-modal');
+                lm.style.display = 'flex';
+                lm.style.opacity = '1';
+                lm.style.zIndex = '9999';
             } else {
                 updateHeaderName(currentUser);
-                checkFirstVisitAndShowGuide(); // Verifica se è la prima volta che entra
+                checkFirstVisitAndShowGuide();
             }
         });
 
-        // Funzione per verificare se è la prima apertura del dispositivo
         function checkFirstVisitAndShowGuide() {
             if (!localStorage.getItem('118_istruzioni_viste')) {
-                // Piccolo ritardo per rendere l'animazione più fluida dopo il caricamento/login
                 setTimeout(() => {
                     window.openModal('guide-modal');
                     localStorage.setItem('118_istruzioni_viste', 'true');
@@ -545,50 +622,17 @@
             localStorage.setItem('118_user_name', name);
             currentUser = name;
             updateHeaderName(currentUser);
-            
-            // Chiude il login e controlla se mostrare le istruzioni
-            const loginModal = document.getElementById('login-modal');
-            loginModal.style.opacity = '0';
-            setTimeout(() => {
-                loginModal.style.display = 'none';
-                checkFirstVisitAndShowGuide();
-            }, 300);
+            const lm = document.getElementById('login-modal');
+            lm.style.opacity = '0';
+            setTimeout(() => { lm.style.display = 'none'; checkFirstVisitAndShowGuide(); }, 300);
         };
 
-        const APPROVAL_TYPES = ['ferie', 'ferie_anno_prec', 'permesso_ore', 'permesso', 'recupero_ore', 'permesso_matrimonio', 'permesso_studio', 'permesso_sportivo', 'permesso_notte', 'aspettativa', 'permesso_lutto'];
-
-        const LABELS = { 
-            "copertura_reperibilita": "Copertura Reperibilità",
-            "ferie": "Ferie", "ferie_anno_prec": "Ferie Anno Prec.",
-            "permesso_ore": "Permesso Ore", "permesso": "Permesso",
-            "cambio_reperibilita": "Cambio Reperibilità", "cambio_turno": "Cambio Turno",
-            "recupero_ore": "Recupero Ore",
-            "permesso_matrimonio": "Permesso Matrimonio",
-            "permesso_studio": "Permesso Studio",
-            "permesso_sportivo": "Permesso Sportivo",
-            "permesso_notte": "Permesso Notte",
-            "aspettativa": "Aspettativa",
-            "permesso_lutto": "Permesso Lutto"
-        };
-        const ICONS = { 
-            "copertura_reperibilita": "shield", "ferie": "beach_access", "ferie_anno_prec": "history",
-            "permesso_ore": "schedule", "permesso": "timer", "cambio_reperibilita": "swap_calls",
-            "cambio_turno": "swap_horiz", "recupero_ore": "hourglass_empty",
-            "permesso_matrimonio": "favorite", "permesso_studio": "school", "permesso_sportivo": "sports_soccer",
-            "permesso_notte": "nights_stay", "aspettativa": "flight_takeoff", "permesso_lutto": "church"
-        };
-        const COLORS = {
-            "copertura_reperibilita": "bg-copertura", "ferie": "bg-ferie", "ferie_anno_prec": "bg-ferie-prec",
-            "permesso_ore": "bg-permesso-ore", "permesso": "bg-permesso", "cambio_reperibilita": "bg-cambio-rep",
-            "cambio_turno": "bg-cambio-turno", "recupero_ore": "bg-recupero",
-            "permesso_matrimonio": "bg-permesso", "permesso_studio": "bg-permesso", "permesso_sportivo": "bg-permesso",
-            "permesso_notte": "bg-permesso", "aspettativa": "bg-ferie", "permesso_lutto": "bg-default"
-        };
-
-        // --- GESTIONE NOTE MIGLIORATIVE ---
+        // ============================================================
+        // NOTE
+        // ============================================================
         onSnapshot(query(collection(db, "note_migliorative"), orderBy("timestamp", "desc")), (snapshot) => {
             savedNotes = [];
-            snapshot.forEach(doc => savedNotes.push({ id: doc.id, ...doc.data() }));
+            snapshot.forEach(d => savedNotes.push({ id: d.id, ...d.data() }));
             window.renderNotes();
         });
 
@@ -600,9 +644,12 @@
                 return;
             }
             savedNotes.forEach(n => {
-                const dateObj = n.timestamp ? new Date(n.timestamp) : new Date();
-                const dateStr = dateObj.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-                const deleteBtn = window.isAdmin ? `<span class="material-icons-round" style="font-size:16px; color:#ef4444; cursor:pointer;" onclick="window.deleteNote('${n.id}')" title="Elimina">delete</span>` : '';
+                const dateStr = n.timestamp
+                    ? new Date(n.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+                    : '';
+                const deleteBtn = window.isAdmin
+                    ? `<span class="material-icons-round" style="font-size:16px; color:#ef4444; cursor:pointer;" onclick="window.deleteNote('${n.id}')" title="Elimina">delete</span>`
+                    : '';
                 container.innerHTML += `
                     <div style="background: #fef9c3; padding: 10px 12px; border-radius: 8px; border: 1px solid #fde047;">
                         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 4px;">
@@ -618,263 +665,253 @@
             const text = document.getElementById('appNotesText').value.trim();
             if (!text) { alert("Scrivi qualcosa prima di aggiungere la nota!"); return; }
             const btn = document.getElementById('btnSaveNotes');
-            const originalText = btn.textContent;
+            const orig = btn.textContent;
             btn.textContent = "AGGIUNTA IN CORSO...";
             try {
                 await addDoc(collection(db, "note_migliorative"), { testo: text, timestamp: new Date().toISOString() });
-                document.getElementById('appNotesText').value = ""; 
+                document.getElementById('appNotesText').value = "";
                 btn.textContent = "AGGIUNTO CON SUCCESSO!";
-                setTimeout(() => btn.textContent = originalText, 1500);
+                setTimeout(() => btn.textContent = orig, 1500);
             } catch(e) {
                 console.error(e);
                 btn.textContent = "ERRORE";
-                setTimeout(() => btn.textContent = originalText, 2000);
+                setTimeout(() => btn.textContent = orig, 2000);
             }
         };
 
         window.deleteNote = async function(id) {
-            if(confirm("Eliminare definitivamente questa nota?")) {
-                try { await deleteDoc(doc(db, "note_migliorative", id)); } catch (error) { console.error(error); }
+            if (confirm("Eliminare definitivamente questa nota?")) {
+                try { await deleteDoc(doc(db, "note_migliorative", id)); } catch (e) { console.error(e); }
             }
         };
 
-
-        // --- GESTIONE TURNI E UI PRINCIPALE ---
+        // ============================================================
+        // TAB SWITCH
+        // ============================================================
         window.switchTab = function(tabName) {
-            if(tabName === 'richieste') {
-                document.getElementById('requests-container').style.display = 'block';
-                document.getElementById('searchBox').style.display = 'block';
-                document.getElementById('mainFab').style.display = 'flex';
-                document.getElementById('turni-container').style.display = 'none';
-                document.getElementById('btnTabRichieste').classList.add('active');
-                document.getElementById('btnTabTurni').classList.remove('active');
-            } else {
-                document.getElementById('requests-container').style.display = 'none';
-                document.getElementById('searchBox').style.display = 'none';
-                document.getElementById('mainFab').style.display = 'none';
-                document.getElementById('turni-container').style.display = 'block';
-                document.getElementById('btnTabRichieste').classList.remove('active');
-                document.getElementById('btnTabTurni').classList.add('active');
-            }
+            const isRichieste = tabName === 'richieste';
+            document.getElementById('requests-container').style.display = isRichieste ? 'block' : 'none';
+            document.getElementById('searchBox').style.display = isRichieste ? 'block' : 'none';
+            document.getElementById('mainFab').style.display = isRichieste ? 'flex' : 'none';
+            document.getElementById('turni-container').style.display = isRichieste ? 'none' : 'block';
+            document.getElementById('btnTabRichieste').classList.toggle('active', isRichieste);
+            document.getElementById('btnTabTurni').classList.toggle('active', !isRichieste);
         };
 
+        // ============================================================
+        // FORM — logica tipo richiesta
+        // ============================================================
+        document.getElementById('reqType').addEventListener('change', function(e) {
+            const val = e.target.value;
+            const swapGroup      = document.getElementById('swap-group');
+            const swapInput      = document.getElementById('reqNameSwap');
+            const timeSlotGroup  = document.getElementById('time-slot-group');
+            const approvalGroup  = document.getElementById('approval-group');
+            const dateToGroup    = document.getElementById('date-to-group');
+            const daysGroup      = document.getElementById('days-group');
+            const labelDateFrom  = document.getElementById('labelDateFrom');
+            const cambioInfo     = document.getElementById('cambio-turno-info');
+
+            // reset
+            swapGroup.style.display = 'none'; swapInput.required = false;
+            timeSlotGroup.style.display = 'none';
+            approvalGroup.style.display = 'none';
+            cambioInfo.style.display = 'none';
+            document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
+            dateToGroup.style.display = 'block';
+            daysGroup.style.display = 'block';
+            labelDateFrom.textContent = "Dal Giorno";
+
+            if (val === 'cambio_turno' || val === 'copertura_reperibilita') {
+                swapGroup.style.display = 'block';
+                swapInput.required = true;
+            }
+            if (val === 'cambio_turno') {
+                cambioInfo.style.display = 'block';
+            }
+            if (val === 'copertura_reperibilita') {
+                timeSlotGroup.style.display = 'block';
+                dateToGroup.style.display = 'none';
+                daysGroup.style.display = 'none';
+                labelDateFrom.textContent = "Il Giorno (Data)";
+            }
+            if (APPROVAL_TYPES.includes(val)) {
+                approvalGroup.style.display = 'block';
+            }
+        });
+
+        // ============================================================
+        // OPEN ADD / EDIT MODAL
+        // ============================================================
         window.openAddModal = function() {
-            window.editingId = null; 
+            window.editingId = null;
             document.getElementById('modal-title-add').textContent = "Nuova Richiesta";
             document.getElementById('requestForm').reset();
             document.getElementById('btnSubmit').textContent = "INVIA RICHIESTA";
-            
+
             const nameSelect = document.getElementById('reqName');
             if (currentUser === 'Centrale 118' || window.isAdmin) {
                 nameSelect.disabled = false;
-                nameSelect.value = ""; 
+                nameSelect.value = "";
             } else {
                 nameSelect.value = currentUser;
-                nameSelect.disabled = true; 
+                nameSelect.disabled = true;
             }
-            
             document.getElementById('reqType').dispatchEvent(new Event('change'));
             window.openModal('add-modal');
         };
 
         window.editRequest = function(id) {
             const r = requests.find(x => x.id === id);
-            if(!r) return;
-            
+            if (!r) return;
             window.editingId = id;
             window.closeModal('detail-modal');
-            
+
             document.getElementById('modal-title-add').textContent = "Modifica Richiesta";
             const nameSelect = document.getElementById('reqName');
-            
-            if (currentUser === 'Centrale 118' || window.isAdmin) {
-                nameSelect.disabled = false;
-            } else {
-                nameSelect.disabled = true;
-            }
+            nameSelect.disabled = !(currentUser === 'Centrale 118' || window.isAdmin);
             nameSelect.value = r.name;
-            
+
             document.getElementById('reqType').value = r.type;
-            document.getElementById('reqType').dispatchEvent(new Event('change')); 
-            
-            if(r.swapWith) document.getElementById('reqNameSwap').value = r.swapWith;
-            if(r.dateFrom) document.getElementById('reqDateFrom').value = r.dateFrom;
-            if(r.dateTo && r.dateTo !== r.dateFrom) document.getElementById('reqDateTo').value = r.dateTo;
-            if(r.effectiveDays && r.effectiveDays !== "N/A") document.getElementById('reqDays').value = r.effectiveDays;
-            if(r.notes) document.getElementById('reqNotes').value = r.notes;
-            
-            if(r.type === 'copertura_reperibilita' && r.timeSlot) {
+            document.getElementById('reqType').dispatchEvent(new Event('change'));
+
+            if (r.swapWith) document.getElementById('reqNameSwap').value = r.swapWith;
+            if (r.dateFrom) document.getElementById('reqDateFrom').value = r.dateFrom;
+            if (r.dateTo && r.dateTo !== r.dateFrom) document.getElementById('reqDateTo').value = r.dateTo;
+            if (r.effectiveDays && r.effectiveDays !== "N/A") document.getElementById('reqDays').value = r.effectiveDays;
+            if (r.notes) document.getElementById('reqNotes').value = r.notes;
+
+            if (r.type === 'copertura_reperibilita' && r.timeSlot) {
                 const slots = r.timeSlot.split(", ");
                 document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => {
                     cb.checked = slots.includes(cb.value);
                 });
             }
-            
+
             document.getElementById('btnSubmit').textContent = "SALVA MODIFICHE";
             window.openModal('add-modal');
-        }
+        };
 
-        document.getElementById('reqType').addEventListener('change', function(e) {
-            const val = e.target.value;
-            const swapGroup = document.getElementById('swap-group');
-            const swapInput = document.getElementById('reqNameSwap');
-            const timeSlotGroup = document.getElementById('time-slot-group');
-            const approvalGroup = document.getElementById('approval-group'); 
-            const dateToGroup = document.getElementById('date-to-group');
-            const daysGroup = document.getElementById('days-group');
-            const labelDateFrom = document.getElementById('labelDateFrom');
-            const cambioTurnoInfo = document.getElementById('cambio-turno-info');
-
-            swapGroup.style.display = 'none'; swapInput.required = false;
-            timeSlotGroup.style.display = 'none'; 
-            approvalGroup.style.display = 'none'; 
-            cambioTurnoInfo.style.display = 'none';
-            document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
-            
-            dateToGroup.style.display = 'block'; daysGroup.style.display = 'block';
-            labelDateFrom.textContent = "Dal Giorno";
-
-            if(val === 'cambio_turno' || val === 'cambio_reperibilita' || val === 'copertura_reperibilita') {
-                swapGroup.style.display = 'block';
-                swapInput.required = true;
-            }
-
-            if(val === 'cambio_turno') {
-                cambioTurnoInfo.style.display = 'block';
-            }
-
-            if(val === 'copertura_reperibilita') {
-                timeSlotGroup.style.display = 'block';
-                dateToGroup.style.display = 'none';
-                daysGroup.style.display = 'none';
-                labelDateFrom.textContent = "Il Giorno (Data)";
-            }
-
-            if(APPROVAL_TYPES.includes(val)) {
-                approvalGroup.style.display = 'block';
-            }
-        });
-
+        // ============================================================
+        // SAVE REQUEST
+        // ============================================================
         onSnapshot(query(collection(db, "richieste_turni"), orderBy("timestamp", "desc")), (snapshot) => {
-            requests = []; snapshot.forEach(doc => requests.push({ id: doc.id, ...doc.data() }));
+            requests = [];
+            snapshot.forEach(d => requests.push({ id: d.id, ...d.data() }));
             window.renderRequests();
         });
 
         window.saveRequest = async function(e) {
             e.preventDefault();
             const btn = document.getElementById('btnSubmit');
-            btn.textContent = "SALVATAGGIO..."; 
+            btn.textContent = "SALVATAGGIO...";
             btn.style.opacity = "0.7";
-            
+
             try {
                 const reqType = document.getElementById('reqType').value;
-                const dFrom = document.getElementById('reqDateFrom').value;
-                const dToRaw = document.getElementById('reqDateTo').value;
-                const isSwap = (reqType === 'cambio_turno' || reqType === 'cambio_reperibilita' || reqType === 'copertura_reperibilita');
-                
+                const dFrom   = document.getElementById('reqDateFrom').value;
+                const dToRaw  = document.getElementById('reqDateTo').value;
+                const isSwap  = (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita');
+
                 let selectedTimeSlots = null;
-                if(reqType === 'copertura_reperibilita') {
-                    const checkboxes = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
-                    if(checkboxes.length === 0) {
+                if (reqType === 'copertura_reperibilita') {
+                    const checked = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
+                    if (checked.length === 0) {
                         alert("Devi spuntare almeno una fascia.");
-                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA"; btn.style.opacity = "1";
+                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA";
+                        btn.style.opacity = "1";
                         return;
                     }
-                    selectedTimeSlots = Array.from(checkboxes).map(cb => cb.value).join(", ");
+                    selectedTimeSlots = Array.from(checked).map(cb => cb.value).join(", ");
                 }
 
+                const payload = {
+                    name:             document.getElementById('reqName').value,
+                    type:             reqType,
+                    swapWith:         isSwap ? document.getElementById('reqNameSwap').value : null,
+                    timeSlot:         selectedTimeSlots,
+                    dateFrom:         dFrom,
+                    dateTo:           (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                    effectiveDays:    (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                    notes:            document.getElementById('reqNotes').value.trim(),
+                    headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
+                    insertedInShifts:  false,
+                    insertedAt:        null
+                };
+
                 if (window.editingId) {
-                    const updateData = {
-                        name: document.getElementById('reqName').value,
-                        type: reqType,
-                        swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
-                        timeSlot: selectedTimeSlots,
-                        dateFrom: dFrom,
-                        dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                        effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
-                        notes: document.getElementById('reqNotes').value.trim(),
-                        headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
-                        insertedInShifts: false,
-                        insertedAt: null
-                    };
-                    await updateDoc(doc(db, "richieste_turni", window.editingId), updateData);
+                    await updateDoc(doc(db, "richieste_turni", window.editingId), payload);
                 } else {
-                    const newReq = {
+                    await addDoc(collection(db, "richieste_turni"), {
+                        ...payload,
                         timestamp: new Date().toISOString(),
-                        name: document.getElementById('reqName').value,
-                        type: reqType,
-                        swapWith: isSwap ? document.getElementById('reqNameSwap').value : null,
-                        timeSlot: selectedTimeSlots,
-                        dateFrom: dFrom,
-                        dateTo: (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                        effectiveDays: (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
-                        notes: document.getElementById('reqNotes').value.trim(),
-                        insertedInShifts: false,
-                        insertedAt: null,
-                        headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
                         obscured: false
-                    };
-                    await addDoc(collection(db, "richieste_turni"), newReq);
+                    });
                 }
-                
+
                 document.getElementById('requestForm').reset();
                 window.editingId = null;
                 document.getElementById('reqType').dispatchEvent(new Event('change'));
                 window.closeModal('add-modal');
-                if(navigator.vibrate) navigator.vibrate(50);
-                
-            } catch (error) { 
-                console.error(error); alert("Errore durante il salvataggio."); 
-            } finally { 
-                btn.textContent = "INVIA RICHIESTA"; btn.style.opacity = "1"; 
+                if (navigator.vibrate) navigator.vibrate(50);
+
+            } catch (err) {
+                console.error(err);
+                alert("Errore durante il salvataggio.");
+            } finally {
+                btn.textContent = "INVIA RICHIESTA";
+                btn.style.opacity = "1";
             }
         };
 
+        // ============================================================
+        // ADMIN
+        // ============================================================
         window.toggleAdmin = function() {
-            if(window.isAdmin) {
+            if (window.isAdmin) {
                 window.isAdmin = false;
                 document.getElementById('adminIcon').style.color = "white";
                 window.switchTab('richieste');
                 alert("Uscito dalla modalità Admin.");
             } else {
                 const pwd = prompt("Inserisci la password per l'accesso Admin:");
-                if(pwd === "00") {
+                if (pwd === "00") {
                     window.isAdmin = true;
                     document.getElementById('adminIcon').style.color = "#fde047";
                     alert("Accesso Admin effettuato.");
-                } else if(pwd !== null) { alert("Password errata."); }
+                } else if (pwd !== null) {
+                    alert("Password errata.");
+                }
             }
             window.renderRequests();
-            window.renderNotes(); 
+            window.renderNotes();
         };
 
         window.deleteRequest = async function(id) {
-            if(confirm("Eliminare definitivamente?")) {
-                try { await deleteDoc(doc(db, "richieste_turni", id)); window.closeModal('detail-modal'); } 
-                catch (error) { console.error(error); }
+            if (confirm("Eliminare definitivamente?")) {
+                try { await deleteDoc(doc(db, "richieste_turni", id)); window.closeModal('detail-modal'); }
+                catch (e) { console.error(e); }
             }
         };
 
         window.obscureRequest = async function(id) {
-            if(confirm("Vuoi ritirare/oscurare questa richiesta?")) {
-                try { await updateDoc(doc(db, "richieste_turni", id), { obscured: true }); window.closeModal('detail-modal'); } 
-                catch (error) { console.error(error); }
+            if (confirm("Vuoi ritirare/oscurare questa richiesta?")) {
+                try { await updateDoc(doc(db, "richieste_turni", id), { obscured: true }); window.closeModal('detail-modal'); }
+                catch (e) { console.error(e); }
             }
         };
 
         window.restoreRequest = async function(id) {
-            try { await updateDoc(doc(db, "richieste_turni", id), { obscured: false }); window.closeModal('detail-modal'); } 
-            catch (error) { console.error(error); }
+            try { await updateDoc(doc(db, "richieste_turni", id), { obscured: false }); window.closeModal('detail-modal'); }
+            catch (e) { console.error(e); }
         };
 
-        // --- SALVATAGGIO MANUALE DETTAGLI (Caposala / Admin) ---
         window.saveDetailChanges = async function(id) {
             const r = requests.find(x => x.id === id);
             if (!r) return;
-            
             let updateData = {};
             let hasChanges = false;
-            
+
             if (APPROVAL_TYPES.includes(r.type)) {
                 const capoEl = document.querySelector(`input[name="capo_${id}"]:checked`);
                 if (capoEl && capoEl.value !== r.headNurseApproval) {
@@ -882,7 +919,6 @@
                     hasChanges = true;
                 }
             }
-            
             if (window.isAdmin) {
                 const insertEl = document.getElementById(`check_insert_${id}`);
                 if (insertEl && insertEl.checked !== r.insertedInShifts) {
@@ -891,14 +927,14 @@
                     hasChanges = true;
                 }
             }
-            
+
             if (hasChanges) {
                 try {
                     await updateDoc(doc(db, "richieste_turni", id), updateData);
                     window.closeModal('detail-modal');
-                    if(navigator.vibrate) navigator.vibrate(50);
-                } catch (error) {
-                    console.error(error);
+                    if (navigator.vibrate) navigator.vibrate(50);
+                } catch (e) {
+                    console.error(e);
                     alert("Errore nel salvataggio.");
                 }
             } else {
@@ -907,19 +943,17 @@
         };
 
         window.toggleInserted = async function(id, currentState) {
-            if(navigator.vibrate) navigator.vibrate(20);
-            const newState = !currentState;
+            if (navigator.vibrate) navigator.vibrate(20);
             try {
-                await updateDoc(doc(db, "richieste_turni", id), { 
-                    insertedInShifts: newState,
-                    insertedAt: newState ? new Date().toISOString() : null
+                await updateDoc(doc(db, "richieste_turni", id), {
+                    insertedInShifts: !currentState,
+                    insertedAt: !currentState ? new Date().toISOString() : null
                 });
             } catch(e) { console.error(e); }
-        }
+        };
 
-        // Funzione per espandere/collassare i mesi
         window.toggleMonth = function(id) {
-            const el = document.getElementById(id);
+            const el   = document.getElementById(id);
             const icon = document.getElementById('icon_' + id);
             if (el.style.display === 'none') {
                 el.style.display = 'block';
@@ -932,98 +966,94 @@
 
         window.downloadJSON = function() {
             const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(requests, null, 2));
-            const dl = document.createElement('a'); dl.setAttribute("href", dataStr);
-            dl.setAttribute("download", "richieste_118_backup_" + new Date().toISOString().slice(0,10) + ".json");
+            const dl = document.createElement('a');
+            dl.setAttribute("href", dataStr);
+            dl.setAttribute("download", "richieste_118_backup_" + new Date().toISOString().slice(0, 10) + ".json");
             document.body.appendChild(dl); dl.click(); dl.remove();
         };
 
+        // ============================================================
+        // RENDER LISTA
+        // ============================================================
         window.renderRequests = function() {
             const container = document.getElementById('requests-container');
-            const search = document.getElementById('searchInput').value.toLowerCase();
+            const search    = document.getElementById('searchInput').value.toLowerCase();
             container.innerHTML = "";
 
-            const filtered = requests.filter(r => r.name.toLowerCase().includes(search) || LABELS[r.type].toLowerCase().includes(search));
+            const filtered = requests.filter(r =>
+                r.name.toLowerCase().includes(search) ||
+                getLabel(r.type).toLowerCase().includes(search)
+            );
 
-            if(filtered.length === 0) {
-                container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>Nessuna richiesta</h3></div>`; return;
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>Nessuna richiesta</h3></div>`;
+                return;
             }
 
-            // Una richiesta è "Pending" se NON è oscurata, NON è stata rifiutata e NON è stata ancora inserita nei turni
             const isPending = (r) => {
                 if (r.obscured) return false;
-                if (r.headNurseApproval === 'no') return false; 
-                if (r.insertedInShifts) return false; 
-                return true; 
+                if (r.headNurseApproval === 'no') return false;
+                if (r.insertedInShifts) return false;
+                return true;
             };
-            
-            const pendingRequests = filtered.filter(isPending).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
-            const otherRequests = filtered.filter(r => !isPending(r)).sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+            const pendingRequests = filtered.filter(isPending).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const otherRequests   = filtered.filter(r => !isPending(r)).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
             const generateRow = (r) => {
-                const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const dTo = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const dateStr = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
+                const dFrom    = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dTo      = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const dateStr  = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
                 const sendDate = new Date(r.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                
-                let rowClass = "";
-                
-                if(r.obscured) {
-                    if(!window.isAdmin && currentUser !== 'Centrale 118') {
-                        return `
-                            <div class="list-row row-obscured" onclick="window.openDetailModal('${r.id}')">
-                                <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:18px">visibility_off</span></div>
-                                <div class="row-content">
-                                    <div class="row-header">
-                                        <div class="row-title">${r.name}</div>
-                                        <div class="row-date-sent">Richiesta del: ${sendDate}</div>
-                                    </div>
-                                    <div class="row-details" style="color: #ef4444; font-weight: 700;">Richiesta Ritirata / Oscurata</div>
+
+                // Oscurata — vista utente normale
+                if (r.obscured && !window.isAdmin && currentUser !== 'Centrale 118') {
+                    return `
+                        <div class="list-row row-obscured" onclick="window.openDetailModal('${r.id}')">
+                            <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:18px">visibility_off</span></div>
+                            <div class="row-content">
+                                <div class="row-header">
+                                    <div class="row-title">${r.name}</div>
+                                    <div class="row-date-sent">Richiesta del: ${sendDate}</div>
                                 </div>
-                            </div>`;
-                    }
-                    rowClass = "row-obscured";
+                                <div class="row-details" style="color: #ef4444; font-weight: 700;">Richiesta Ritirata / Oscurata</div>
+                            </div>
+                        </div>`;
                 }
 
-                if(!r.obscured) {
-                    if (r.headNurseApproval === 'no') {
-                        rowClass = "row-rejected";
-                    } else if (r.insertedInShifts) {
-                        rowClass = "row-confirmed"; 
-                    } else {
-                        rowClass = "row-pending"; 
-                    }
-                }
+                let rowClass = r.obscured ? "row-obscured"
+                    : r.headNurseApproval === 'no' ? "row-rejected"
+                    : r.insertedInShifts ? "row-confirmed"
+                    : "row-pending";
 
                 let caposalaBadge = '';
                 if (APPROVAL_TYPES.includes(r.type) && !r.obscured) {
-                    if(r.headNurseApproval === 'si') caposalaBadge = `<span style="color: #059669; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #10b981;">✓ Approvata</span>`;
-                    else if(r.headNurseApproval === 'no') caposalaBadge = `<span style="color: #dc2626; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #ef4444;">✗ Rifiutata</span>`;
-                    else caposalaBadge = `<span style="color: #d97706; font-weight: 800; background: rgba(255,255,255,0.7); padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; border: 1px solid #f59e0b;">⏳ Attesa</span>`;
+                    if (r.headNurseApproval === 'si')    caposalaBadge = `<span style="color:#059669;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #10b981;">✓ Approvata</span>`;
+                    else if (r.headNurseApproval === 'no') caposalaBadge = `<span style="color:#dc2626;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #ef4444;">✗ Rifiutata</span>`;
+                    else caposalaBadge = `<span style="color:#d97706;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #f59e0b;">⏳ Attesa</span>`;
                 }
 
                 let periodDetails = dateStr;
-                if(r.type === 'copertura_reperibilita' && r.timeSlot) periodDetails += ` (${r.timeSlot})`;
-                if(r.swapWith) periodDetails += ` (con ${r.swapWith})`;
+                if (r.type === 'copertura_reperibilita' && r.timeSlot) periodDetails += ` (${r.timeSlot})`;
+                if (r.swapWith) periodDetails += ` ↔ ${r.swapWith}`;
 
-                const adminTag = (r.obscured && (window.isAdmin || currentUser === 'Centrale 118')) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
-
+                const adminTag     = (r.obscured && (window.isAdmin || currentUser === 'Centrale 118')) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
                 const insertButton = (!r.obscured && window.isAdmin) ? `
                     <button class="btn-quick-insert ${r.insertedInShifts ? 'inserted' : ''}" onclick="event.stopPropagation(); window.toggleInserted('${r.id}', ${r.insertedInShifts})">
                         <span class="material-icons-round" style="font-size:14px">${r.insertedInShifts ? 'check_circle' : 'radio_button_unchecked'}</span>
                         ${r.insertedInShifts ? 'Inserito' : 'Segna inserito'}
-                    </button>
-                ` : '';
+                    </button>` : '';
 
                 return `
                     <div class="list-row ${rowClass}" onclick="window.openDetailModal('${r.id}')">
-                        <div class="row-icon ${COLORS[r.type] || "bg-default"}"><span class="material-icons-round" style="font-size:18px">${ICONS[r.type]}</span></div>
+                        <div class="row-icon ${getColor(r.type)}"><span class="material-icons-round" style="font-size:18px">${getIcon(r.type)}</span></div>
                         <div class="row-content">
                             <div class="row-header">
                                 <div class="row-title">${adminTag}${r.name}</div>
                                 <div class="row-date-sent">Richiesta del: ${sendDate}</div>
                             </div>
                             <div class="row-details">
-                                <span style="color:var(--text-sec);">Tipo:</span> <strong>${LABELS[r.type]}</strong> • <span style="color: var(--primary); font-weight:600;">${periodDetails}</span>
+                                <span style="color:var(--text-sec);">Tipo:</span> <strong>${getLabel(r.type)}</strong> • <span style="color:var(--primary);font-weight:600;">${periodDetails}</span>
                             </div>
                             ${(!r.obscured && (caposalaBadge || insertButton)) ? `
                             <div class="row-actions">
@@ -1034,204 +1064,182 @@
                     </div>`;
             };
 
-            if(pendingRequests.length > 0) {
+            if (pendingRequests.length > 0) {
                 container.innerHTML += `<div class="section-title" style="color:#ef4444;">In Attesa d'Azione</div><div class="month-group" style="border: 2px solid #fee2e2;">${pendingRequests.map(generateRow).join('')}</div>`;
             }
 
-            if(otherRequests.length > 0) {
-                // Linea Nera Divisoria
-                container.innerHTML += `<hr style="border: none; border-top: 2px solid #0f172a; margin: 25px 5px 15px 5px;">`;
-                
-                const groups = {};
+            if (otherRequests.length > 0) {
+                container.innerHTML += `<hr style="border:none;border-top:2px solid #0f172a;margin:25px 5px 15px 5px;">`;
+
+                const groups    = {};
                 const groupKeys = [];
-                
                 otherRequests.forEach(r => {
-                    const m = new Date(r.timestamp).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
+                    const m   = new Date(r.timestamp).toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
                     const cap = m.charAt(0).toUpperCase() + m.slice(1);
-                    if(!groups[cap]) {
-                        groups[cap] = [];
-                        groupKeys.push(cap);
-                    }
+                    if (!groups[cap]) { groups[cap] = []; groupKeys.push(cap); }
                     groups[cap].push(r);
                 });
-                
-                // Controllo Mese Corrente
+
                 const currentMonthName = new Date().toLocaleDateString('it-IT', { month: 'long', year: 'numeric' });
                 const capCurrent = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
 
-                let monthIndex = 0;
-                for (const month of groupKeys) {
-                    const isPastMonth = (month !== capCurrent); // Se non è il mese in corso, è passato (o futuro, ma lo trattiamo come da chiudere)
-                    const displayStyle = isPastMonth ? 'none' : 'block';
-                    const iconStr = isPastMonth ? 'expand_more' : 'expand_less';
-                    const containerId = `month_group_${monthIndex}`;
-                    
+                groupKeys.forEach((month, idx) => {
+                    const isPast       = (month !== capCurrent);
+                    const displayStyle = isPast ? 'none' : 'block';
+                    const iconStr      = isPast ? 'expand_more' : 'expand_less';
+                    const containerId  = `month_group_${idx}`;
+
                     container.innerHTML += `
                         <div class="month-group">
                             <div class="month-header" onclick="window.toggleMonth('${containerId}')">
-                                <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="display:flex;align-items:center;gap:6px;">
                                     <span class="material-icons-round" style="font-size:16px">calendar_month</span> Inserite a: ${month}
                                 </div>
-                                <span class="material-icons-round" id="icon_${containerId}" style="font-size: 20px;">${iconStr}</span>
+                                <span class="material-icons-round" id="icon_${containerId}" style="font-size:20px;">${iconStr}</span>
                             </div>
-                            <div id="${containerId}" style="display: ${displayStyle};">
+                            <div id="${containerId}" style="display:${displayStyle};">
                                 ${groups[month].map(generateRow).join('')}
                             </div>
                         </div>`;
-                    monthIndex++;
-                }
+                });
             }
         };
 
-        window.openModal = function(id) {
-            document.getElementById(id).style.display = 'flex';
-            setTimeout(() => document.getElementById(id).classList.add('open'), 10);
-        }
-
-        window.closeModal = function(id, e) {
-            if (e && e.target !== e.currentTarget) return;
-            const m = document.getElementById(id);
-            m.classList.remove('open'); setTimeout(() => m.style.display = 'none', 300);
-        }
-
+        // ============================================================
+        // DETTAGLIO
+        // ============================================================
         window.openDetailModal = function(id) {
             const r = requests.find(x => x.id === id);
-            if(!r || (r.obscured && !window.isAdmin && currentUser !== 'Centrale 118')) return; 
+            if (!r || (r.obscured && !window.isAdmin && currentUser !== 'Centrale 118')) return;
 
-            let html = ``;
-            
-            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                        <div class="detail-label" style="color: var(--primary);">Data e Ora Invio Richiesta</div>
-                        <div class="detail-value" style="font-size: 0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
+            let html = '';
+
+            html += `<div class="detail-item" style="background:#f8fafc;padding:12px;border-radius:8px;">
+                        <div class="detail-label" style="color:var(--primary);">Data e Ora Invio Richiesta</div>
+                        <div class="detail-value" style="font-size:0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
                      </div>`;
 
-            html += `<div class="detail-item" style="background: #f8fafc; padding: 12px; border-radius: 8px;">
-                        <div class="detail-label" style="color: var(--primary);">Stato Inserimento Turni</div>
-                        <div class="detail-value" style="font-size: 0.95rem;">
-                            ${r.insertedInShifts 
-                                ? `<span style="color: #059669; font-weight: 700;">✓ Inserita il ${r.insertedAt ? new Date(r.insertedAt).toLocaleString('it-IT') : 'Data non disponibile'}</span>` 
-                                : `<span style="color: #64748b; font-weight: 700;">⏳ In attesa di inserimento</span>`}
+            html += `<div class="detail-item" style="background:#f8fafc;padding:12px;border-radius:8px;">
+                        <div class="detail-label" style="color:var(--primary);">Stato Inserimento Turni</div>
+                        <div class="detail-value" style="font-size:0.95rem;">
+                            ${r.insertedInShifts
+                                ? `<span style="color:#059669;font-weight:700;">✓ Inserita il ${r.insertedAt ? new Date(r.insertedAt).toLocaleString('it-IT') : 'Data non disponibile'}</span>`
+                                : `<span style="color:#64748b;font-weight:700;">⏳ In attesa di inserimento</span>`}
                         </div>
                      </div>`;
 
-            html += `<div class="detail-item" style="margin-top: 15px;"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
-                     <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${LABELS[r.type]}</div></div>`;
+            html += `<div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
+                     <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${getLabel(r.type)}</div></div>`;
 
-            if(r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
-            if(r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fasce Orarie Scelte</div><div class="detail-value">${r.timeSlot}</div></div>`;
-            
-            const dFrom = new Date(r.dateFrom).toLocaleDateString('it-IT');
-            const dTo = new Date(r.dateTo).toLocaleDateString('it-IT');
-            const periodStr = r.type === 'copertura_reperibilita' || dFrom === dTo ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
-            
-            // LINK VERSO I TURNI (PASSAGGIO DATA TRAMITE URL)
-            const urlTurni = `https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/?date=${r.dateFrom}#${r.dateFrom}`;
+            if (r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
+            if (r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fasce Orarie Scelte</div><div class="detail-value">${r.timeSlot}</div></div>`;
+
+            const dFrom   = new Date(r.dateFrom).toLocaleDateString('it-IT');
+            const dTo     = new Date(r.dateTo).toLocaleDateString('it-IT');
+            const periodStr = (r.type === 'copertura_reperibilita' || dFrom === dTo) ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
+            const urlTurni  = `https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/?date=${r.dateFrom}#${r.dateFrom}`;
 
             html += `<div class="detail-item">
                         <div class="detail-label">Periodo</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;">
                             <div class="detail-value">${periodStr}</div>
                             <a href="${urlTurni}" target="_blank" class="btn-icon" style="background:var(--primary);color:white;width:30px;height:30px;" title="Apri Turni per questa data">
                                 <span class="material-icons-round" style="font-size:18px;">event</span>
                             </a>
                         </div>
                      </div>`;
-            
-            if(r.type !== 'copertura_reperibilita') html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
-            
-            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "-"}</div></div>`;
 
-            // Nota informativa nel dettaglio per Cambio Turno
-            if(r.type === 'cambio_turno') {
-                html += `<div style="background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:15px;">
-                            <div style="display:flex; gap:8px; align-items:flex-start;">
-                                <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
-                                <div style="color:#1e40af; font-size:0.8rem; font-weight:600; line-height:1.5;">
-                                    L'orario presente nella casella dei turni, sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
+            if (r.type !== 'copertura_reperibilita') {
+                html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
+            }
+
+            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "—"}</div></div>`;
+
+            if (r.type === 'cambio_turno') {
+                html += `<div style="background:#eff6ff;padding:12px;border-radius:10px;border:1px solid #bfdbfe;margin-bottom:15px;">
+                            <div style="display:flex;gap:8px;align-items:flex-start;">
+                                <span class="material-icons-round" style="color:#2563eb;font-size:18px;flex-shrink:0;margin-top:1px;">info</span>
+                                <div style="color:#1e40af;font-size:0.8rem;font-weight:600;line-height:1.5;">
+                                    L'orario presente nella casella dei turni sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
                                 </div>
                             </div>
                          </div>`;
             }
 
-            let hasApprovableOrAdminControls = false;
+            let hasControls = false;
 
             if (APPROVAL_TYPES.includes(r.type)) {
                 if (window.isAdmin || !r.insertedInShifts) {
-                    hasApprovableOrAdminControls = true;
-                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                                <div class="detail-label" style="margin-bottom:10px; color: var(--primary);">La figura di coordinamento deve sempre approvare la richiesta di assenza, che verrà aggiunta al programma turni solo dopo la sua approvazione</div>
-                                <div style="display: flex; flex-direction: column; gap: 10px;">
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''}>
-                                        <span style="color: #059669;">Sì, Approvato</span>
-                                    </label>
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''}>
-                                        <span style="color: #dc2626;">No, Rifiutato</span>
-                                    </label>
-                                    <label class="checkbox-wrapper">
-                                        <input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''}>
-                                        <span style="color: #64748b;">In Attesa</span>
-                                    </label>
+                    hasControls = true;
+                    html += `<div style="margin-top:15px;border-top:1px dashed #cbd5e1;padding-top:15px;">
+                                <div class="detail-label" style="margin-bottom:10px;color:var(--primary);">La figura di coordinamento deve approvare la richiesta prima dell'inserimento in turno</div>
+                                <div style="display:flex;flex-direction:column;gap:10px;">
+                                    <label class="checkbox-wrapper"><input type="radio" name="capo_${r.id}" value="si" ${r.headNurseApproval === 'si' ? 'checked' : ''}><span style="color:#059669;">Sì, Approvato</span></label>
+                                    <label class="checkbox-wrapper"><input type="radio" name="capo_${r.id}" value="no" ${r.headNurseApproval === 'no' ? 'checked' : ''}><span style="color:#dc2626;">No, Rifiutato</span></label>
+                                    <label class="checkbox-wrapper"><input type="radio" name="capo_${r.id}" value="attesa" ${r.headNurseApproval === 'attesa' ? 'checked' : ''}><span style="color:#64748b;">In Attesa</span></label>
                                 </div>
                              </div>`;
                 } else {
-                    // Sola lettura per la caposala se la richiesta è già "Conclusa" e non sei admin
-                    let stateStr = "In Attesa";
-                    let stateColor = "#64748b";
-                    if(r.headNurseApproval === 'si') { stateStr = "Sì, Approvato"; stateColor = "#059669"; }
-                    if(r.headNurseApproval === 'no') { stateStr = "No, Rifiutato"; stateColor = "#dc2626"; }
-                    
-                    html += `<div style="margin-top: 15px; border-top: 1px dashed #cbd5e1; padding-top: 15px;">
-                                <div class="detail-label" style="margin-bottom:5px; color: var(--primary);">Approvazione Caposala</div>
-                                <div style="font-weight: 800; font-size: 0.95rem; color: ${stateColor};">${stateStr}</div>
+                    const stateStr   = r.headNurseApproval === 'si' ? "Sì, Approvato" : r.headNurseApproval === 'no' ? "No, Rifiutato" : "In Attesa";
+                    const stateColor = r.headNurseApproval === 'si' ? "#059669" : r.headNurseApproval === 'no' ? "#dc2626" : "#64748b";
+                    html += `<div style="margin-top:15px;border-top:1px dashed #cbd5e1;padding-top:15px;">
+                                <div class="detail-label" style="margin-bottom:5px;color:var(--primary);">Approvazione Caposala</div>
+                                <div style="font-weight:800;font-size:0.95rem;color:${stateColor};">${stateStr}</div>
                              </div>`;
                 }
             }
 
             if (window.isAdmin) {
-                hasApprovableOrAdminControls = true;
+                hasControls = true;
                 html += `<div class="admin-controls">
                             <h4>Gestione Turni (Solo Admin)</h4>
-                            <div style="margin-bottom: 10px;">
-                                <label class="checkbox-wrapper">
-                                    <input type="checkbox" id="check_insert_${r.id}" ${r.insertedInShifts ? 'checked' : ''}> 
-                                    Segna come "Inserita nei turni"
-                                </label>
-                            </div>
+                            <label class="checkbox-wrapper">
+                                <input type="checkbox" id="check_insert_${r.id}" ${r.insertedInShifts ? 'checked' : ''}>
+                                Segna come "Inserita nei turni"
+                            </label>
                          </div>`;
             }
 
-            // TASTO CONFERMA DEDICATO (mostrato solo se ci sono impostazioni da salvare)
-            if (hasApprovableOrAdminControls && !r.obscured) {
-                html += `<button class="btn-submit" style="background:#10b981; margin-top:15px; width:100%; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="window.saveDetailChanges('${r.id}')">CONFERMA MODIFICHE</button>`;
+            if (hasControls && !r.obscured) {
+                html += `<button class="btn-submit" style="background:#10b981;margin-top:15px;width:100%;box-shadow:0 4px 10px rgba(16,185,129,0.3);" onclick="window.saveDetailChanges('${r.id}')">CONFERMA MODIFICHE</button>`;
             }
 
             html += `<div class="action-buttons" style="margin-top:20px;">`;
-            if(r.obscured) {
-                if(window.isAdmin || currentUser === 'Centrale 118') {
+            if (r.obscured) {
+                if (window.isAdmin || currentUser === 'Centrale 118') {
                     html += `<button class="btn-action btn-restore" onclick="window.restoreRequest('${r.id}')">Ripristina</button>`;
-                    if(window.isAdmin) html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
+                    if (window.isAdmin) html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
                 }
             } else {
-                const isConcluded = r.insertedInShifts; // Logica: la richiesta è conclusa se inserita
-                
                 if (window.isAdmin) {
-                    html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica Richiesta</button>`;
+                    html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica</button>`;
                     html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira</button>`;
                     html += `<button class="btn-action btn-delete" onclick="window.deleteRequest('${r.id}')">Elimina</button>`;
-                } else if (!isConcluded) {
-                    if (r.name === currentUser || currentUser === 'Centrale 118') {
-                        html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica Richiesta</button>`;
-                        html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira</button>`;
-                    }
+                } else if (!r.insertedInShifts && (r.name === currentUser || currentUser === 'Centrale 118')) {
+                    html += `<button class="btn-action btn-edit" onclick="window.editRequest('${r.id}')">Modifica</button>`;
+                    html += `<button class="btn-action btn-hide" onclick="window.obscureRequest('${r.id}')">Ritira</button>`;
                 }
             }
             html += `</div>`;
 
             document.getElementById('detail-content').innerHTML = html;
             window.openModal('detail-modal');
-        }
+        };
+
+        // ============================================================
+        // MODAL HELPERS
+        // ============================================================
+        window.openModal = function(id) {
+            document.getElementById(id).style.display = 'flex';
+            setTimeout(() => document.getElementById(id).classList.add('open'), 10);
+        };
+
+        window.closeModal = function(id, e) {
+            if (e && e.target !== e.currentTarget) return;
+            const m = document.getElementById(id);
+            m.classList.remove('open');
+            setTimeout(() => m.style.display = 'none', 300);
+        };
     </script>
 </body>
 </html>
