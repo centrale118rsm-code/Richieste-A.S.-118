@@ -498,7 +498,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, setDoc, onSnapshot, deleteDoc, doc, updateDoc, query, orderBy, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyAMX2ycf_6P3AcBvarVX4XNKbdposkuqgE",
@@ -575,6 +575,66 @@
             'recupero_ore', 'permesso_matrimonio', 'permesso_studio',
             'permesso_sportivo', 'permesso_notte', 'aspettativa', 'permesso_lutto'
         ];
+
+        // ============================================================
+        // SYNC AUTOMATICO REPERIBILITÀ -> PROGRAMMA TURNI (A.S. 26)
+        // ============================================================
+        // Ogni "Cessione reperibilità" inviata da qui scrive automaticamente uno o più
+        // documenti nella collection "reperibilita_overrides" (stesso progetto Firebase
+        // del programma turni). Il programma turni, dopo aver ricostruito le fasce di
+        // reperibilità leggendo l'Excel, applica sopra questi override per sostituire
+        // in automatico l'operatore che copre la fascia, senza bisogno di modificare
+        // manualmente il file turni.xlsx.
+        //
+        // Indice della fascia dentro l'array REPERIBILITA[mese_giorno] usato dal
+        // programma turni: [0]=00-07  [1]=07-13  [2]=13-20  [3]=20-00
+        const SLOT_INDEX = {
+            "00:00/07:00": 0,
+            "07:00/13:00": 1,
+            "13:00/20:00": 2,
+            "20:00/00:00": 3
+        };
+        const SLOT_LABEL = ["00:00-07:00", "07:00-13:00", "13:00-20:00", "20:00-00:00"];
+
+        // Rimuove tutti gli override collegati a una richiesta (usato prima di riscriverli,
+        // quando la richiesta viene oscurata, o quando viene cancellata).
+        async function removeReperibilitaOverrides(requestId) {
+            try {
+                const q = query(collection(db, "reperibilita_overrides"), where("requestId", "==", requestId));
+                const snap = await getDocs(q);
+                await Promise.all(snap.docs.map(d => deleteDoc(d.ref)));
+            } catch (e) {
+                console.error("Errore rimozione override reperibilità:", e);
+            }
+        }
+
+        // Ricalcola e riscrive gli override per una richiesta di tipo "copertura_reperibilita".
+        // Va chiamata dopo ogni salvataggio/modifica/oscuramento/ripristino della richiesta.
+        async function syncReperibilitaOverrides(requestId, r) {
+            // Rimuove sempre prima gli eventuali override esistenti per questa richiesta,
+            // così una modifica di data/fasce/operatore non lascia residui vecchi.
+            await removeReperibilitaOverrides(requestId);
+
+            if (r.type !== 'copertura_reperibilita') return;
+            if (r.obscured) return; // richiesta ritirata -> nessun override attivo
+            if (!r.swapWith || !r.timeSlot || !r.dateFrom) return;
+
+            const slots = r.timeSlot.split(", ").map(s => s.trim()).filter(Boolean);
+            await Promise.all(slots.map(slot => {
+                const slotIndex = SLOT_INDEX[slot];
+                if (slotIndex === undefined) return Promise.resolve();
+                const overrideId = `${r.dateFrom}_${slotIndex}`;
+                return setDoc(doc(db, "reperibilita_overrides", overrideId), {
+                    date: r.dateFrom,
+                    slotIndex: slotIndex,
+                    timeSlot: SLOT_LABEL[slotIndex],
+                    originalDriver: r.name || null,
+                    newDriver: r.swapWith,
+                    requestId: requestId,
+                    updatedAt: new Date().toISOString()
+                });
+            }));
+        }
 
         // Helper: label sicura anche per vecchie chiavi non presenti
         function getLabel(type) {
@@ -841,12 +901,14 @@
 
                 if (window.editingId) {
                     await updateDoc(doc(db, "richieste_turni", window.editingId), payload);
+                    await syncReperibilitaOverrides(window.editingId, { ...payload, obscured: false });
                 } else {
-                    await addDoc(collection(db, "richieste_turni"), {
+                    const newDocRef = await addDoc(collection(db, "richieste_turni"), {
                         ...payload,
                         timestamp: new Date().toISOString(),
                         obscured: false
                     });
+                    await syncReperibilitaOverrides(newDocRef.id, { ...payload, obscured: false });
                 }
 
                 document.getElementById('requestForm').reset();
@@ -889,20 +951,33 @@
 
         window.deleteRequest = async function(id) {
             if (confirm("Eliminare definitivamente?")) {
-                try { await deleteDoc(doc(db, "richieste_turni", id)); window.closeModal('detail-modal'); }
+                try {
+                    await removeReperibilitaOverrides(id);
+                    await deleteDoc(doc(db, "richieste_turni", id));
+                    window.closeModal('detail-modal');
+                }
                 catch (e) { console.error(e); }
             }
         };
 
         window.obscureRequest = async function(id) {
             if (confirm("Vuoi ritirare/oscurare questa richiesta?")) {
-                try { await updateDoc(doc(db, "richieste_turni", id), { obscured: true }); window.closeModal('detail-modal'); }
+                try {
+                    await updateDoc(doc(db, "richieste_turni", id), { obscured: true });
+                    await removeReperibilitaOverrides(id);
+                    window.closeModal('detail-modal');
+                }
                 catch (e) { console.error(e); }
             }
         };
 
         window.restoreRequest = async function(id) {
-            try { await updateDoc(doc(db, "richieste_turni", id), { obscured: false }); window.closeModal('detail-modal'); }
+            try {
+                await updateDoc(doc(db, "richieste_turni", id), { obscured: false });
+                const r = requests.find(x => x.id === id);
+                if (r) await syncReperibilitaOverrides(id, { ...r, obscured: false });
+                window.closeModal('detail-modal');
+            }
             catch (e) { console.error(e); }
         };
 
