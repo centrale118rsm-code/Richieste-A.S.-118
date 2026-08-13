@@ -8,6 +8,7 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
     
     <style>
         * { -webkit-tap-highlight-color: transparent; user-select: none; box-sizing: border-box; outline: none; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -389,6 +390,46 @@
                     </select>
                 </div>
 
+                <!-- Info Cambio Turno -->
+                <div id="cambio-turno-info" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:14px;">
+                    <div style="display:flex; gap:8px; align-items:flex-start;">
+                        <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
+                        <div style="color:#1e40af; font-size:0.8rem; font-weight:600; line-height:1.5;">
+                            L'orario presente nella casella dei turni, sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Data reperibilità (SOLO le date in cui l'operatore risulta reperibile, lette
+                     in automatico da turni.xlsx) — sostituisce il campo data libero per la
+                     Cessione reperibilità, per evitare di cedere una data sbagliata/inesistente. -->
+                <div class="form-group" id="rep-date-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
+                    <label style="color:#4338ca; margin-bottom: 8px;">Quale tua reperibilità vuoi cedere?</label>
+                    <select id="repDateSelect" class="form-control" required>
+                        <option value="" disabled selected>Caricamento reperibilità...</option>
+                    </select>
+                    <div id="repDateEmptyMsg" style="display:none; color:#b45309; font-size:0.78rem; font-weight:600; margin-top:6px;">
+                        Nessuna reperibilità trovata in calendario per questo operatore.
+                    </div>
+                </div>
+
+                <!-- Fasce reperibilità -->
+                <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
+                    <label style="color:#4338ca; margin-bottom: 8px;">Fasce di Reperibilità</label>
+                    <label class="checkbox-wrapper" style="font-weight:800; border-bottom:1px dashed #c7d2fe; padding-bottom:6px; margin-bottom:2px;">
+                        <input type="checkbox" id="reqTimeSlotAll"> Tutta la fascia (tutte e 4)
+                    </label>
+                    <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="13:00/20:00" disabled> 13:00 - 20:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="20:00/00:00"> 20:00 - 00:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="00:00/07:00"> 00:00 - 07:00</label>
+                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="07:00/13:00"> 07:00 - 13:00</label>
+                    </div>
+                    <div style="color:#64748b; font-size:0.72rem; font-weight:500; margin-top:6px;">
+                        La fascia 13:00-20:00 è quella di apertura del tuo turno e non è cedibile da qui.
+                    </div>
+                </div>
+
                 <!-- Con chi fai il cambio -->
                 <div class="form-group" id="swap-group" style="display:none; background:#f1f5f9; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
                     <label>Con chi fai il cambio?</label>
@@ -406,27 +447,6 @@
                     </select>
                 </div>
 
-                <!-- Info Cambio Turno -->
-                <div id="cambio-turno-info" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe; margin-bottom:14px;">
-                    <div style="display:flex; gap:8px; align-items:flex-start;">
-                        <span class="material-icons-round" style="color:#2563eb; font-size:18px; flex-shrink:0; margin-top:1px;">info</span>
-                        <div style="color:#1e40af; font-size:0.8rem; font-weight:600; line-height:1.5;">
-                            L'orario presente nella casella dei turni, sarà l'orario effettivo di lavoro da svolgere. Questo non comporterà alcun credito o debito di minutaggio significativo ai fini dei conteggi.
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Fasce reperibilità -->
-                <div class="form-group" id="time-slot-group" style="display:none; background:#e0e7ff; padding:12px; border-radius:10px; border:1px solid #c7d2fe;">
-                    <label style="color:#4338ca; margin-bottom: 8px;">Fasce di Reperibilità</label>
-                    <div style="display: flex; flex-direction: column; gap: 4px;">
-                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="13:00/20:00"> 13:00 - 20:00</label>
-                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="20:00/00:00"> 20:00 - 00:00</label>
-                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="00:00/07:00"> 00:00 - 07:00</label>
-                        <label class="checkbox-wrapper"><input type="checkbox" name="reqTimeSlot" value="07:00/13:00"> 07:00 - 13:00</label>
-                    </div>
-                </div>
-
                 <!-- Avviso approvazione -->
                 <div class="form-group" id="approval-group" style="display:none; background:#fef3c7; padding:12px; border-radius:10px; border:1px solid #fde68a;">
                     <div style="color:#b45309; font-size:0.8rem; font-weight:700; line-height: 1.3;">
@@ -435,8 +455,8 @@
                     </div>
                 </div>
 
-                <div class="form-row">
-                    <div class="form-group">
+                <div class="form-row" id="date-from-row">
+                    <div class="form-group" id="date-from-group">
                         <label id="labelDateFrom">Dal Giorno</label>
                         <input type="date" id="reqDateFrom" class="form-control" required>
                     </div>
@@ -517,6 +537,173 @@
         let requests = [];
         let savedNotes = [];
         let currentUser = localStorage.getItem('118_user_name');
+
+        // ============================================================
+        // REPERIBILITÀ OPERATORE — lette dal vivo da turni.xlsx (stesso file usato dal
+        // programma turni A.S. 26), per mostrare in "Cessione reperibilità" SOLO le date
+        // in cui l'operatore selezionato risulta effettivamente reperibile in calendario.
+        // ============================================================
+        const REP_MONTH_NUM = { "GENNAIO":1, "FEBBRAIO":2, "MARZO":3, "APRILE":4, "MAGGIO":5, "GIUGNO":6, "LUGLIO":7, "AGOSTO":8, "SETTEMBRE":9, "OTTOBRE":10, "NOVEMBRE":11, "DICEMBRE":12 };
+        const REP_MONTH_NAME = ["", "Gennaio","Febbraio","Marzo","Aprile","Maggio","Giugno","Luglio","Agosto","Settembre","Ottobre","Novembre","Dicembre"];
+        const REP_ROWS = [29, 30, 31, 32]; // [00-07, 07-13, 13-20, 20-00], stesse righe dell'Excel usate dal programma turni
+        const REP_YEAR = 2026;
+        let REPERIBILITA_R = {};      // "mese_giorno" -> [fascia0..fascia3], grezzo da Excel
+        let repDataLoaded = false;
+        let repDataLoadPromise = null;
+
+        function normalizeRepNameR(name) {
+            if (!name) return "";
+            let n = name.toString().toUpperCase().trim();
+            if (n.startsWith("MICHELOT")) return "MICHELOTTI";
+            return n.replace(/\.$/, "");
+        }
+
+        // Carica turni.xlsx dal programma turni ufficiale e ricostruisce REPERIBILITA_R
+        // leggendo le righe 29-32, esattamente come fa il programma turni A.S. 26.
+        async function loadReperibilitaData() {
+            if (repDataLoadPromise) return repDataLoadPromise;
+            repDataLoadPromise = (async () => {
+                try {
+                    const resp = await fetch("https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/turni.xlsx?v=" + Date.now());
+                    if (!resp.ok) throw new Error("File turni non raggiungibile");
+                    const buffer = await resp.arrayBuffer();
+                    const workbook = new ExcelJS.Workbook();
+                    await workbook.xlsx.load(buffer);
+                    const ws = workbook.getWorksheet("Foglio2") || workbook.worksheets[0];
+                    const raw = [];
+                    ws.eachRow({ includeEmpty: true }, (row, rowNumber) => {
+                        const rowData = [];
+                        row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
+                            let val = cell.value;
+                            if (typeof val === 'object' && val !== null) val = val.result || "";
+                            rowData[colNumber] = val;
+                        });
+                        raw[rowNumber] = rowData;
+                    });
+
+                    const rowGiorno = raw[2];
+                    const rowMese = raw[1];
+                    const repRowsData = REP_ROWS.map(r => raw[r] || null);
+                    if (!rowGiorno || repRowsData.some(r => !r)) {
+                        console.warn("⚠️ Reperibilità: righe 29-32 non trovate nel file turni.");
+                        return;
+                    }
+                    let currentMonth = "";
+                    const rep = {};
+                    for (let c = 2; c < rowGiorno.length; c++) {
+                        const cellDay = rowGiorno[c];
+                        const cellMese = rowMese ? rowMese[c] : null;
+                        if (cellMese && typeof cellMese === 'string') {
+                            const parts = cellMese.split(".");
+                            if (parts[0]) currentMonth = parts[0].trim().toUpperCase();
+                        }
+                        const dayNum = cellDay ? parseInt(cellDay) : null;
+                        if (dayNum && !isNaN(dayNum)) {
+                            const mNum = REP_MONTH_NUM[currentMonth];
+                            if (!mNum) continue;
+                            const fasce = repRowsData.map(rowArr => {
+                                const v = rowArr[c];
+                                return v ? v.toString().trim().toUpperCase() : "";
+                            });
+                            if (fasce.some(f => f !== "")) {
+                                rep[mNum + "_" + dayNum] = fasce;
+                            }
+                        }
+                    }
+                    REPERIBILITA_R = rep;
+                    repDataLoaded = true;
+                } catch (e) {
+                    console.error("Errore caricamento reperibilità:", e);
+                }
+            })();
+            return repDataLoadPromise;
+        }
+
+        // Ritorna, per un operatore, l'elenco ordinato delle date in cui è TITOLARE di un
+        // turno di reperibilità (fascia 13:00-20:00 a suo nome) — sono le uniche date che ha
+        // davvero senso poter "cedere", raggruppate per mese.
+        function getMyReperibilitaDates(operatorName) {
+            const nNorm = normalizeRepNameR(operatorName);
+            const out = [];
+            for (const key in REPERIBILITA_R) {
+                const fasce = REPERIBILITA_R[key];
+                if (!fasce || !fasce[2]) continue;
+                if (normalizeRepNameR(fasce[2]) !== nNorm) continue;
+                const [mNum, day] = key.split("_").map(Number);
+                out.push({ mNum, day, iso: REP_YEAR + "-" + String(mNum).padStart(2,"0") + "-" + String(day).padStart(2,"0") });
+            }
+            out.sort((a, b) => (a.mNum - b.mNum) || (a.day - b.day));
+            return out;
+        }
+
+        // Popola il <select id="repDateSelect"> con le date reperibilità dell'operatore
+        // selezionato in "Operatore", raggruppate per mese come richiesto.
+        async function populateRepDateSelect() {
+            const sel = document.getElementById('repDateSelect');
+            const emptyMsg = document.getElementById('repDateEmptyMsg');
+            if (!sel) return;
+            sel.innerHTML = '<option value="" disabled selected>Caricamento reperibilità...</option>';
+            emptyMsg.style.display = 'none';
+
+            const operatorName = document.getElementById('reqName').value || currentUser;
+            if (!operatorName || operatorName === 'Centrale 118') {
+                sel.innerHTML = '<option value="" disabled selected>Seleziona prima l\'operatore</option>';
+                return;
+            }
+
+            await loadReperibilitaData();
+            const dates = getMyReperibilitaDates(operatorName);
+
+            sel.innerHTML = '';
+            if (dates.length === 0) {
+                sel.innerHTML = '<option value="" disabled selected>Nessuna reperibilità trovata</option>';
+                emptyMsg.style.display = 'block';
+                return;
+            }
+            const placeholder = document.createElement('option');
+            placeholder.value = ""; placeholder.disabled = true; placeholder.selected = true;
+            placeholder.textContent = "Seleziona una data...";
+            sel.appendChild(placeholder);
+
+            let currentGroup = null, currentOptgroup = null;
+            dates.forEach(d => {
+                if (d.mNum !== currentGroup) {
+                    currentGroup = d.mNum;
+                    currentOptgroup = document.createElement('optgroup');
+                    currentOptgroup.label = REP_MONTH_NAME[d.mNum] + " " + REP_YEAR;
+                    sel.appendChild(currentOptgroup);
+                }
+                const opt = document.createElement('option');
+                opt.value = d.iso;
+                opt.textContent = String(d.day).padStart(2, "0") + " " + REP_MONTH_NAME[d.mNum];
+                currentOptgroup.appendChild(opt);
+            });
+        }
+
+        // Selezionata una data reperibilità: la riporta nel campo nascosto reqDateFrom
+        // (usato dal salvataggio) e resetta le fasce già spuntate (cambia il contesto).
+        document.addEventListener('DOMContentLoaded', () => {
+            const repSel = document.getElementById('repDateSelect');
+            if (repSel) {
+                repSel.addEventListener('change', function() {
+                    document.getElementById('reqDateFrom').value = this.value;
+                    document.getElementById('reqTimeSlotAll').checked = false;
+                    document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => { if (!cb.disabled) cb.checked = false; });
+                });
+            }
+            const nameSel = document.getElementById('reqName');
+            if (nameSel) {
+                nameSel.addEventListener('change', function() {
+                    if (document.getElementById('reqType').value === 'copertura_reperibilita') populateRepDateSelect();
+                });
+            }
+            const allSlotCb = document.getElementById('reqTimeSlotAll');
+            if (allSlotCb) {
+                allSlotCb.addEventListener('change', function() {
+                    document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => { if (!cb.disabled) cb.checked = allSlotCb.checked; });
+                });
+            }
+        });
 
         // ============================================================
         // DIZIONARI — le chiavi corrispondono ESATTAMENTE ai value del <select>
@@ -608,6 +795,29 @@
             }
         }
 
+        // Giorni per mese (2026 non bisestile) — usato per lo shift di data qui sotto.
+        const DIM_2026 = [0,31,28,31,30,31,30,31,31,30,31,30,31];
+
+        // Le fasce 00:00-07:00 (slot 0) e 07:00-13:00 (slot 1) sono, nella struttura letta
+        // dal programma turni (righe 29-32 dell'Excel), la "coda" del turno che INIZIA nel
+        // giorno selezionato qui (r.dateFrom): sono registrate sulla riga Excel del giorno
+        // SUCCESSIVO, non su quella del giorno selezionato. Le fasce 13:00-20:00 (slot 2) e
+        // 20:00-00:00 (slot 3) sono invece sulla riga del giorno selezionato stesso.
+        // Se non si sposta la data per gli slot 0/1, l'override finisce sulla cella sbagliata:
+        // non viene mai applicato alla reperibilità realmente ceduta, e nel frattempo sovrascrive
+        // per errore la fascia di un turno completamente diverso (quello di un altro operatore,
+        // iniziato il giorno prima). Questa funzione calcola la data giusta per ogni slot.
+        function overrideDateForSlot(dateFromISO, slotIndex) {
+            const parts = dateFromISO.split("-"); // YYYY-MM-DD
+            if (parts.length !== 3) return dateFromISO;
+            let y = parseInt(parts[0]), m = parseInt(parts[1]), d = parseInt(parts[2]);
+            if (slotIndex === 0 || slotIndex === 1) {
+                d += 1;
+                if (d > DIM_2026[m]) { d = 1; m += 1; if (m > 12) { m = 1; y += 1; } }
+            }
+            return y + "-" + String(m).padStart(2, "0") + "-" + String(d).padStart(2, "0");
+        }
+
         // Ricalcola e riscrive gli override per una richiesta di tipo "copertura_reperibilita".
         // Va chiamata dopo ogni salvataggio/modifica/oscuramento/ripristino della richiesta.
         async function syncReperibilitaOverrides(requestId, r) {
@@ -623,9 +833,10 @@
             await Promise.all(slots.map(slot => {
                 const slotIndex = SLOT_INDEX[slot];
                 if (slotIndex === undefined) return Promise.resolve();
-                const overrideId = `${r.dateFrom}_${slotIndex}`;
+                const effectiveDate = overrideDateForSlot(r.dateFrom, slotIndex);
+                const overrideId = `${effectiveDate}_${slotIndex}`;
                 return setDoc(doc(db, "reperibilita_overrides", overrideId), {
-                    date: r.dateFrom,
+                    date: effectiveDate,
                     slotIndex: slotIndex,
                     timeSlot: SLOT_LABEL[slotIndex],
                     originalDriver: r.name || null,
@@ -767,20 +978,29 @@
             const swapInput      = document.getElementById('reqNameSwap');
             const timeSlotGroup  = document.getElementById('time-slot-group');
             const approvalGroup  = document.getElementById('approval-group');
+            const dateFromGroup  = document.getElementById('date-from-group');
             const dateToGroup    = document.getElementById('date-to-group');
             const daysGroup      = document.getElementById('days-group');
             const labelDateFrom  = document.getElementById('labelDateFrom');
             const cambioInfo     = document.getElementById('cambio-turno-info');
+            const repDateGroup   = document.getElementById('rep-date-group');
+            const repSel         = document.getElementById('repDateSelect');
+            const allSlotCb      = document.getElementById('reqTimeSlotAll');
 
             // reset
             swapGroup.style.display = 'none'; swapInput.required = false;
             timeSlotGroup.style.display = 'none';
             approvalGroup.style.display = 'none';
             cambioInfo.style.display = 'none';
+            repDateGroup.style.display = 'none';
+            if (repSel) repSel.required = false;
             document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
+            if (allSlotCb) allSlotCb.checked = false;
+            dateFromGroup.style.display = 'block';
             dateToGroup.style.display = 'block';
             daysGroup.style.display = 'block';
             labelDateFrom.textContent = "Dal Giorno";
+            document.getElementById('reqDateFrom').required = true;
 
             if (val === 'cambio_turno' || val === 'copertura_reperibilita') {
                 swapGroup.style.display = 'block';
@@ -794,6 +1014,13 @@
                 dateToGroup.style.display = 'none';
                 daysGroup.style.display = 'none';
                 labelDateFrom.textContent = "Il Giorno (Data)";
+                // Sostituisce il campo data libero con l'elenco delle SUE reperibilità reali:
+                // il campo classico resta nel DOM (serve al salvataggio) ma nascosto.
+                dateFromGroup.style.display = 'none';
+                document.getElementById('reqDateFrom').required = false;
+                repDateGroup.style.display = 'block';
+                if (repSel) repSel.required = true;
+                populateRepDateSelect();
             }
             if (APPROVAL_TYPES.includes(val)) {
                 approvalGroup.style.display = 'block';
@@ -821,7 +1048,7 @@
             window.openModal('add-modal');
         };
 
-        window.editRequest = function(id) {
+        window.editRequest = async function(id) {
             const r = requests.find(x => x.id === id);
             if (!r) return;
             window.editingId = id;
@@ -846,6 +1073,16 @@
                 document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => {
                     cb.checked = slots.includes(cb.value);
                 });
+                const nonHeadSlots = ["20:00/00:00", "00:00/07:00", "07:00/13:00"];
+                document.getElementById('reqTimeSlotAll').checked = nonHeadSlots.every(s => slots.includes(s));
+                // La lista reperibilità del select viene popolata in modo asincrono (legge
+                // turni.xlsx): quando è pronta, riseleziona la data già salvata sulla richiesta.
+                if (r.dateFrom) {
+                    populateRepDateSelect().then(() => {
+                        const repSel = document.getElementById('repDateSelect');
+                        if (repSel) repSel.value = r.dateFrom;
+                    });
+                }
             }
 
             document.getElementById('btnSubmit').textContent = "SALVA MODIFICHE";
@@ -875,6 +1112,12 @@
 
                 let selectedTimeSlots = null;
                 if (reqType === 'copertura_reperibilita') {
+                    if (!dFrom) {
+                        alert("Seleziona una data tra le tue reperibilità in calendario.");
+                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA";
+                        btn.style.opacity = "1";
+                        return;
+                    }
                     const checked = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
                     if (checked.length === 0) {
                         alert("Devi spuntare almeno una fascia.");
