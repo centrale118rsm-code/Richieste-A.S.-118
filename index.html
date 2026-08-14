@@ -604,6 +604,7 @@
         let repDataLoaded = false;
         let repDataLoadPromise = null;
         let SHIFT_MATRIX_R = {}; // "mNum_day" -> { NOMEAUTISTA: "M"|"P"|"N"|... (grezzo dall'Excel) }
+        const KNOWN_DRIVER_NAMES_R = ['BARBIERI','PAZZAGLIA','BIANCHI','SARTI','GHIOTTI','BERARDI','MICHELOTTI','VOLPINI','FABBRI'];
 
         function normalizeRepNameR(name) {
             if (!name) return "";
@@ -612,24 +613,28 @@
             return n.replace(/\.$/, "");
         }
 
-        // Estrae dal foglio grezzo l'elenco delle righe-autista (stessa logica usata dal
-        // programma turni A.S. 26: colonna B, righe da 3 in poi, escludendo le etichette
-        // di riepilogo tipo "CONGEDO", "MALATTIA", ecc.).
+        // Estrae dal foglio grezzo la riga di ciascuno dei 9 autisti noti (colonna B).
+        // Ancorato all'elenco noto (non a "qualsiasi stringa lunga in colonna B") apposta:
+        // il foglio contiene anche altre righe di riepilogo/servizio più in basso, e un
+        // match generico rischiava di agganciarsi alla riga sbagliata, leggendo il turno
+        // di un altro autista al posto di quello richiesto. Prende solo la PRIMA riga
+        // trovata per ciascun nome, per evitare ambiguità in caso di righe duplicate.
         function extractDriverRowsFromRaw(raw) {
             const driverRows = [];
+            const found = new Set();
             for (let r = 3; r < raw.length; r++) {
                 if (!raw[r]) continue;
                 const cellName = raw[r][1];
-                if (cellName && typeof cellName === 'string') {
-                    const txt = cellName.toUpperCase();
-                    if (txt.includes("CONGEDO") || txt.includes("MALATTIA") || txt.includes("RESIDUE") ||
-                        txt.includes("P.S.") || txt.includes("RECUPERO") || txt.includes("PERM.") ||
-                        txt.includes("ASPETTATIVA") || txt.includes("FEST.") || txt.includes("DISTACCO") ||
-                        txt.includes("1>7") || txt.includes("P/PN")) continue;
+                if (!cellName || typeof cellName !== 'string') continue;
+                const norm = normalizeRepNameR(cellName);
+                if (KNOWN_DRIVER_NAMES_R.includes(norm) && !found.has(norm)) {
+                    driverRows.push({ name: norm, idx: r });
+                    found.add(norm);
                 }
-                if (cellName && typeof cellName === 'string' && cellName.length > 2) {
-                    driverRows.push({ name: cellName.toUpperCase().trim(), idx: r });
-                }
+            }
+            if (driverRows.length < KNOWN_DRIVER_NAMES_R.length) {
+                const missing = KNOWN_DRIVER_NAMES_R.filter(n => !found.has(n));
+                console.warn("⚠️ Turni: autisti non trovati nel file (controllo cambio turno non disponibile per loro):", missing.join(", "));
             }
             return driverRows;
         }
