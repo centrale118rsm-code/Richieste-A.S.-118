@@ -447,6 +447,36 @@
                     </select>
                 </div>
 
+                <!-- Turni da scambiare (solo Cambio Turno) — servono per controllare che il
+                     cambio corrisponda davvero a quello che risulta sul programma turni,
+                     prima di poterlo applicare in automatico al calendario. -->
+                <div class="form-group" id="cambio-shifts-group" style="display:none; background:#eff6ff; padding:12px; border-radius:10px; border:1px solid #bfdbfe;">
+                    <label style="color:#1e40af;">Turni da scambiare quel giorno</label>
+                    <div style="display:flex; gap:10px;">
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem; font-weight:700; color:#64748b; margin-bottom:4px; display:block;">Il tuo turno</label>
+                            <select id="reqMyShift" class="form-control">
+                                <option value="" disabled selected>Seleziona...</option>
+                                <option value="M">Mattina</option>
+                                <option value="P">Pomeriggio</option>
+                                <option value="N">Notte</option>
+                            </select>
+                        </div>
+                        <div style="flex:1;">
+                            <label style="font-size:0.72rem; font-weight:700; color:#64748b; margin-bottom:4px; display:block;" id="reqOtherShiftLabel">Il suo turno</label>
+                            <select id="reqOtherShift" class="form-control">
+                                <option value="" disabled selected>Seleziona...</option>
+                                <option value="M">Mattina</option>
+                                <option value="P">Pomeriggio</option>
+                                <option value="N">Notte</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="color:#64748b; font-size:0.72rem; font-weight:500; margin-top:8px;">
+                        Indica il turno di ciascuno prima dello scambio: verrà controllato che corrisponda davvero al programma turni, altrimenti la richiesta non verrà accettata.
+                    </div>
+                </div>
+
                 <!-- Avviso approvazione -->
                 <div class="form-group" id="approval-group" style="display:none; background:#fef3c7; padding:12px; border-radius:10px; border:1px solid #fde68a;">
                     <div style="color:#b45309; font-size:0.8rem; font-weight:700; line-height: 1.3;">
@@ -505,6 +535,29 @@
         </div>
     </div>
 
+    <!-- MODAL RIEPILOGO/CONFERMA RICHIESTA -->
+    <div id="confirm-request-modal" class="modal-overlay" style="z-index:600;" onclick="window.backToEditRequest(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h2><span class="material-icons-round" style="vertical-align:middle;margin-right:6px;">fact_check</span>Riepilogo Richiesta</h2>
+            </div>
+            <div style="padding:18px;">
+                <p style="font-size:0.82rem; color:var(--text-sec); margin:0 0 14px;">
+                    Controlla che sia tutto corretto prima di inviare.
+                </p>
+                <div id="confirm-request-summary" style="display:flex; flex-direction:column; gap:10px;"></div>
+                <div style="display:flex; gap:10px; margin-top:20px;">
+                    <button type="button" class="btn-submit" style="flex:1; background:#f1f5f9; color:#334155;" onclick="window.backToEditRequest()">
+                        <span class="material-icons-round" style="vertical-align:middle;font-size:18px;">arrow_back</span> Torna indietro
+                    </button>
+                    <button type="button" class="btn-submit" id="btnConfirmRequest" style="flex:1;" onclick="window.confirmAndSubmitRequest()">
+                        <span class="material-icons-round" style="vertical-align:middle;font-size:18px;">check_circle</span> Sì, corretto
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DETTAGLIO -->
     <div id="detail-modal" class="modal-overlay" onclick="window.closeModal('detail-modal', event)">
         <div class="modal-content" onclick="event.stopPropagation()">
@@ -550,6 +603,7 @@
         let REPERIBILITA_R = {};      // "mese_giorno" -> [fascia0..fascia3], grezzo da Excel
         let repDataLoaded = false;
         let repDataLoadPromise = null;
+        let SHIFT_MATRIX_R = {}; // "mNum_day" -> { NOMEAUTISTA: "M"|"P"|"N"|... (grezzo dall'Excel) }
 
         function normalizeRepNameR(name) {
             if (!name) return "";
@@ -558,8 +612,57 @@
             return n.replace(/\.$/, "");
         }
 
-        // Carica turni.xlsx dal programma turni ufficiale e ricostruisce REPERIBILITA_R
-        // leggendo le righe 29-32, esattamente come fa il programma turni A.S. 26.
+        // Estrae dal foglio grezzo l'elenco delle righe-autista (stessa logica usata dal
+        // programma turni A.S. 26: colonna B, righe da 3 in poi, escludendo le etichette
+        // di riepilogo tipo "CONGEDO", "MALATTIA", ecc.).
+        function extractDriverRowsFromRaw(raw) {
+            const driverRows = [];
+            for (let r = 3; r < raw.length; r++) {
+                if (!raw[r]) continue;
+                const cellName = raw[r][1];
+                if (cellName && typeof cellName === 'string') {
+                    const txt = cellName.toUpperCase();
+                    if (txt.includes("CONGEDO") || txt.includes("MALATTIA") || txt.includes("RESIDUE") ||
+                        txt.includes("P.S.") || txt.includes("RECUPERO") || txt.includes("PERM.") ||
+                        txt.includes("ASPETTATIVA") || txt.includes("FEST.") || txt.includes("DISTACCO") ||
+                        txt.includes("1>7") || txt.includes("P/PN")) continue;
+                }
+                if (cellName && typeof cellName === 'string' && cellName.length > 2) {
+                    driverRows.push({ name: cellName.toUpperCase().trim(), idx: r });
+                }
+            }
+            return driverRows;
+        }
+
+        // Ritorna il codice turno (M/P/N/R/...) di un operatore in una data precisa, letto
+        // dalla matrice caricata da Excel. "" se non trovato o dato non ancora caricato.
+        function getShiftCodeFor(operatorName, mNum, day) {
+            const dayData = SHIFT_MATRIX_R[mNum + "_" + day];
+            if (!dayData) return "";
+            const nNorm = normalizeRepNameR(operatorName);
+            for (const key in dayData) {
+                if (normalizeRepNameR(key) === nNorm) return dayData[key];
+            }
+            return "";
+        }
+
+        // Normalizza un codice turno grezzo (es. "m", "MAT", "6:30-13:15"...) in una sigla
+        // semplice M/P/N/R/SM per il confronto in fase di validazione cambio turno.
+        function normalizeShiftCodeR(val) {
+            if (!val) return "";
+            const u = val.toString().toUpperCase().trim();
+            const first = u.charAt(0);
+            if (u.startsWith("M") || first === 'm') return "M";
+            if (u.startsWith("P") || first === 'p') return "P";
+            if (u.startsWith("N")) return "N";
+            if (u.startsWith("R")) return "R";
+            if (u.startsWith("S")) return "SM";
+            return "";
+        }
+
+        // Carica turni.xlsx dal programma turni ufficiale e ricostruisce sia REPERIBILITA_R
+        // (righe 29-32) sia SHIFT_MATRIX_R (turno di ogni autista in ogni giorno, usato per
+        // validare i Cambi Turno prima di applicarli in automatico).
         async function loadReperibilitaData() {
             if (repDataLoadPromise) return repDataLoadPromise;
             repDataLoadPromise = (async () => {
@@ -584,12 +687,14 @@
                     const rowGiorno = raw[2];
                     const rowMese = raw[1];
                     const repRowsData = REP_ROWS.map(r => raw[r] || null);
+                    const driverRows = extractDriverRowsFromRaw(raw);
                     if (!rowGiorno || repRowsData.some(r => !r)) {
                         console.warn("⚠️ Reperibilità: righe 29-32 non trovate nel file turni.");
                         return;
                     }
                     let currentMonth = "";
                     const rep = {};
+                    const shiftMatrix = {};
                     for (let c = 2; c < rowGiorno.length; c++) {
                         const cellDay = rowGiorno[c];
                         const cellMese = rowMese ? rowMese[c] : null;
@@ -608,9 +713,16 @@
                             if (fasce.some(f => f !== "")) {
                                 rep[mNum + "_" + dayNum] = fasce;
                             }
+                            const dayShifts = {};
+                            driverRows.forEach(dr => {
+                                const v = raw[dr.idx] ? raw[dr.idx][c] : null;
+                                dayShifts[dr.name] = v ? v.toString().trim() : "";
+                            });
+                            shiftMatrix[mNum + "_" + dayNum] = dayShifts;
                         }
                     }
                     REPERIBILITA_R = rep;
+                    SHIFT_MATRIX_R = shiftMatrix;
                     repDataLoaded = true;
                 } catch (e) {
                     console.error("Errore caricamento reperibilità:", e);
@@ -621,15 +733,21 @@
 
         // Ritorna, per un operatore, l'elenco ordinato delle date in cui è TITOLARE di un
         // turno di reperibilità (fascia 13:00-20:00 a suo nome) — sono le uniche date che ha
-        // davvero senso poter "cedere", raggruppate per mese.
+        // davvero senso poter "cedere", raggruppate per mese. Sono ammesse solo le date da
+        // UNA SETTIMANA INDIETRO rispetto a oggi in poi (non oltre, non tutto lo storico).
         function getMyReperibilitaDates(operatorName) {
             const nNorm = normalizeRepNameR(operatorName);
             const out = [];
+            const minDate = new Date();
+            minDate.setHours(0, 0, 0, 0);
+            minDate.setDate(minDate.getDate() - 7); // limite: una settimana indietro da oggi
             for (const key in REPERIBILITA_R) {
                 const fasce = REPERIBILITA_R[key];
                 if (!fasce || !fasce[2]) continue;
                 if (normalizeRepNameR(fasce[2]) !== nNorm) continue;
                 const [mNum, day] = key.split("_").map(Number);
+                const dateObj = new Date(REP_YEAR, mNum - 1, day);
+                if (dateObj < minDate) continue; // troppo vecchia: più di una settimana fa
                 out.push({ mNum, day, iso: REP_YEAR + "-" + String(mNum).padStart(2,"0") + "-" + String(day).padStart(2,"0") });
             }
             out.sort((a, b) => (a.mNum - b.mNum) || (a.day - b.day));
@@ -703,6 +821,14 @@
                     document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => { if (!cb.disabled) cb.checked = allSlotCb.checked; });
                 });
             }
+            const swapSel = document.getElementById('reqNameSwap');
+            if (swapSel) {
+                swapSel.addEventListener('change', function() {
+                    const lbl = document.getElementById('reqOtherShiftLabel');
+                    if (lbl) lbl.textContent = this.value ? ('Turno di ' + this.value) : 'Il suo turno';
+                });
+            }
+            applyBibbiaRequestTypes(); // nasconde i tipi di richiesta disattivati dall'Area Admin
         });
 
         // ============================================================
@@ -986,6 +1112,9 @@
             const repDateGroup   = document.getElementById('rep-date-group');
             const repSel         = document.getElementById('repDateSelect');
             const allSlotCb      = document.getElementById('reqTimeSlotAll');
+            const cambioShiftsGroup = document.getElementById('cambio-shifts-group');
+            const myShiftSel     = document.getElementById('reqMyShift');
+            const otherShiftSel  = document.getElementById('reqOtherShift');
 
             // reset
             swapGroup.style.display = 'none'; swapInput.required = false;
@@ -993,6 +1122,8 @@
             approvalGroup.style.display = 'none';
             cambioInfo.style.display = 'none';
             repDateGroup.style.display = 'none';
+            cambioShiftsGroup.style.display = 'none';
+            myShiftSel.required = false; otherShiftSel.required = false;
             if (repSel) repSel.required = false;
             document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.checked = false);
             if (allSlotCb) allSlotCb.checked = false;
@@ -1008,6 +1139,10 @@
             }
             if (val === 'cambio_turno') {
                 cambioInfo.style.display = 'block';
+                cambioShiftsGroup.style.display = 'block';
+                myShiftSel.required = true; otherShiftSel.required = true;
+                dateToGroup.style.display = 'none';
+                daysGroup.style.display = 'none';
             }
             if (val === 'copertura_reperibilita') {
                 timeSlotGroup.style.display = 'block';
@@ -1068,6 +1203,13 @@
             if (r.effectiveDays && r.effectiveDays !== "N/A") document.getElementById('reqDays').value = r.effectiveDays;
             if (r.notes) document.getElementById('reqNotes').value = r.notes;
 
+            if (r.type === 'cambio_turno') {
+                if (r.myShift) document.getElementById('reqMyShift').value = r.myShift;
+                if (r.otherShift) document.getElementById('reqOtherShift').value = r.otherShift;
+                const lbl = document.getElementById('reqOtherShiftLabel');
+                if (lbl && r.swapWith) lbl.textContent = 'Turno di ' + r.swapWith;
+            }
+
             if (r.type === 'copertura_reperibilita' && r.timeSlot) {
                 const slots = r.timeSlot.split(", ");
                 document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => {
@@ -1090,6 +1232,37 @@
         };
 
         // ============================================================
+        // BIBBIA — regole e automazioni impostate dall'Area Admin del programma turni,
+        // lette qui in tempo reale (stessa collezione Firestore "admin_config").
+        // ============================================================
+        let BIBBIA_CONFIG_R = { tipiRichiesta: {}, autoSyncReperibilita: true, autoApplyCambioTurno: false };
+        onSnapshot(doc(db, "admin_config", "bibbia"), (docSnap) => {
+            BIBBIA_CONFIG_R = Object.assign(
+                { tipiRichiesta: {}, autoSyncReperibilita: true, autoApplyCambioTurno: false },
+                docSnap.exists() ? docSnap.data() : {}
+            );
+            applyBibbiaRequestTypes();
+        });
+
+        // Nasconde dal menu "Tipo di Richiesta" le voci disattivate dall'admin. Se l'utente
+        // aveva già selezionato un tipo che viene disattivato in questo momento, lo lascia
+        // com'è (non lo forza a cambiare mentre magari sta ancora compilando).
+        function applyBibbiaRequestTypes() {
+            const tipi = BIBBIA_CONFIG_R.tipiRichiesta || {};
+            document.querySelectorAll('#reqType option[value]').forEach(opt => {
+                if (!opt.value) return;
+                const enabled = tipi[opt.value] !== false;
+                opt.disabled = !enabled;
+                opt.style.display = enabled ? '' : 'none';
+            });
+            // Se un intero optgroup è tutto disattivato, lo nasconde per pulizia.
+            document.querySelectorAll('#reqType optgroup').forEach(og => {
+                const opts = Array.from(og.querySelectorAll('option'));
+                og.style.display = opts.every(o => o.disabled) ? 'none' : '';
+            });
+        }
+
+        // ============================================================
         // SAVE REQUEST
         // ============================================================
         onSnapshot(query(collection(db, "richieste_turni"), orderBy("timestamp", "desc")), (snapshot) => {
@@ -1098,73 +1271,198 @@
             window.renderRequests();
         });
 
+        // Tiene il payload pronto in attesa di conferma dell'utente nella finestrella di riepilogo.
+        let pendingRequestPayload = null;
+
         window.saveRequest = async function(e) {
             e.preventDefault();
-            const btn = document.getElementById('btnSubmit');
+
+            const reqType = document.getElementById('reqType').value;
+            const dFrom   = document.getElementById('reqDateFrom').value;
+            const dToRaw  = document.getElementById('reqDateTo').value;
+            const isSwap  = (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita');
+
+            let selectedTimeSlots = null;
+            if (reqType === 'copertura_reperibilita') {
+                if (!dFrom) {
+                    alert("Seleziona una data tra le tue reperibilità in calendario.");
+                    return;
+                }
+                const checked = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
+                if (checked.length === 0) {
+                    alert("Devi spuntare almeno una fascia.");
+                    return;
+                }
+                selectedTimeSlots = Array.from(checked).map(cb => cb.value).join(", ");
+            }
+
+            let myShift = null, otherShift = null;
+            if (reqType === 'cambio_turno') {
+                myShift    = document.getElementById('reqMyShift').value;
+                otherShift = document.getElementById('reqOtherShift').value;
+                const otherName = document.getElementById('reqNameSwap').value;
+                const myName    = document.getElementById('reqName').value;
+                if (!dFrom || !myShift || !otherShift || !otherName) {
+                    alert("Compila data, operatore e i turni di entrambi prima di continuare.");
+                    return;
+                }
+                // ── Controllo di corrispondenza col programma turni reale ──
+                // Non lasciamo passare un cambio turno se quello che l'operatore dichiara
+                // non corrisponde a quello che risulta davvero sul file turni: altrimenti,
+                // se poi l'automazione "Cambio turno automatico" è attiva, si rischierebbe
+                // di scambiare turni sbagliati.
+                const btn = document.getElementById('btnSubmit');
+                const prevBtnText = btn.textContent;
+                btn.textContent = "Controllo turni...";
+                await loadReperibilitaData();
+                btn.textContent = prevBtnText;
+
+                const parts = dFrom.split("-");
+                if (parts.length === 3 && repDataLoaded) {
+                    const mNum = parseInt(parts[1]), day = parseInt(parts[2]);
+                    const myActual    = normalizeShiftCodeR(getShiftCodeFor(myName, mNum, day));
+                    const otherActual = normalizeShiftCodeR(getShiftCodeFor(otherName, mNum, day));
+                    const SHIFT_NAMES = { M: 'Mattina', P: 'Pomeriggio', N: 'Notte' };
+                    const mismatches = [];
+                    if (myActual && myActual !== myShift) {
+                        mismatches.push(`Il tuo turno quel giorno risulta ${SHIFT_NAMES[myActual] || myActual}, non ${SHIFT_NAMES[myShift]}.`);
+                    }
+                    if (otherActual && otherActual !== otherShift) {
+                        mismatches.push(`Il turno di ${otherName} quel giorno risulta ${SHIFT_NAMES[otherActual] || otherActual}, non ${SHIFT_NAMES[otherShift]}.`);
+                    }
+                    if (mismatches.length > 0) {
+                        alert("⚠️ Il cambio turno indicato non corrisponde al programma turni:\n\n" + mismatches.join("\n") + "\n\nCorreggi i turni indicati e riprova.");
+                        return;
+                    }
+                }
+                // Se i dati turni non sono disponibili (file non raggiungibile), la richiesta
+                // procede comunque come testo semplice: solo il controllo automatico salta,
+                // non l'invio della richiesta in sé.
+            }
+
+            const payload = {
+                name:             document.getElementById('reqName').value,
+                type:             reqType,
+                swapWith:         isSwap ? document.getElementById('reqNameSwap').value : null,
+                timeSlot:         selectedTimeSlots,
+                myShift:          myShift,
+                otherShift:       otherShift,
+                dateFrom:         dFrom,
+                dateTo:           (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
+                effectiveDays:    (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                notes:            document.getElementById('reqNotes').value.trim(),
+                headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
+                insertedInShifts:  false,
+                insertedAt:        null
+            };
+
+            pendingRequestPayload = payload;
+            showRequestSummary(payload);
+            window.closeModal('add-modal');
+            window.openModal('confirm-request-modal');
+        };
+
+        // Costruisce il testo di riepilogo mostrato prima dell'invio definitivo.
+        function showRequestSummary(payload) {
+            const box = document.getElementById('confirm-request-summary');
+            function row(label, value) {
+                if (!value) return '';
+                return `<div style="display:flex; justify-content:space-between; gap:12px; padding:9px 0; border-bottom:1px solid var(--border);">
+                            <span style="color:var(--text-sec); font-size:0.78rem; font-weight:700;">${label}</span>
+                            <span style="font-weight:800; font-size:0.85rem; text-align:right;">${value}</span>
+                        </div>`;
+            }
+            const dateLabel = (payload.dateFrom === payload.dateTo || !payload.dateTo)
+                ? formatDateIt(payload.dateFrom)
+                : `${formatDateIt(payload.dateFrom)} → ${formatDateIt(payload.dateTo)}`;
+
+            let html = '';
+            html += row('Operatore', payload.name);
+            html += row('Tipo di richiesta', LABELS[payload.type] || payload.type);
+            html += row(payload.type === 'copertura_reperibilita' ? 'Data reperibilità' : 'Giorni', dateLabel);
+            if (payload.timeSlot) html += row('Fasce cedute', payload.timeSlot);
+            if (payload.swapWith) html += row('Con chi', payload.swapWith);
+            const SHIFT_NAMES_SUMMARY = { M: 'Mattina', P: 'Pomeriggio', N: 'Notte' };
+            if (payload.myShift) html += row('Il tuo turno', SHIFT_NAMES_SUMMARY[payload.myShift] || payload.myShift);
+            if (payload.otherShift) html += row('Turno di ' + (payload.swapWith || 'collega'), SHIFT_NAMES_SUMMARY[payload.otherShift] || payload.otherShift);
+            if (payload.type !== 'copertura_reperibilita' && payload.type !== 'cambio_turno') html += row('Giorni effettivi', payload.effectiveDays);
+            if (payload.notes) html += row('Note', payload.notes);
+            box.innerHTML = html || '<div class="note-empty">Nessun dettaglio da mostrare.</div>';
+        }
+
+        function formatDateIt(iso) {
+            if (!iso) return '';
+            const parts = iso.split('-');
+            if (parts.length !== 3) return iso;
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        // Torna al form per correggere, senza perdere quanto già compilato.
+        window.backToEditRequest = function(e) {
+            if (e && e.target !== e.currentTarget) return;
+            window.closeModal('confirm-request-modal');
+            window.openModal('add-modal');
+        };
+
+        // Scrive/aggiorna l'override di scambio turno per una richiesta "cambio_turno" già
+        // validata. La lettura/applicazione effettiva avviene nel programma turni A.S. 26,
+        // e solo se l'automazione "Cambio turno automatico" è attiva nella Bibbia.
+        async function syncTurnoOverride(requestId, r) {
+            const overrideRef = doc(db, "turno_overrides", requestId);
+            if (r.type !== 'cambio_turno' || r.obscured || !r.swapWith || !r.dateFrom) {
+                await deleteDoc(overrideRef).catch(() => {});
+                return;
+            }
+            await setDoc(overrideRef, {
+                date: r.dateFrom,
+                driverA: r.name,
+                driverB: r.swapWith,
+                requestId: requestId,
+                updatedAt: new Date().toISOString()
+            });
+        }
+
+        // Conferma definitiva: qui avviene il vero salvataggio su Firestore.
+        window.confirmAndSubmitRequest = async function() {
+            if (!pendingRequestPayload) return;
+            const payload = pendingRequestPayload;
+            const btn = document.getElementById('btnConfirmRequest');
             btn.textContent = "SALVATAGGIO...";
             btn.style.opacity = "0.7";
 
             try {
-                const reqType = document.getElementById('reqType').value;
-                const dFrom   = document.getElementById('reqDateFrom').value;
-                const dToRaw  = document.getElementById('reqDateTo').value;
-                const isSwap  = (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita');
-
-                let selectedTimeSlots = null;
-                if (reqType === 'copertura_reperibilita') {
-                    if (!dFrom) {
-                        alert("Seleziona una data tra le tue reperibilità in calendario.");
-                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA";
-                        btn.style.opacity = "1";
-                        return;
-                    }
-                    const checked = document.querySelectorAll('input[name="reqTimeSlot"]:checked');
-                    if (checked.length === 0) {
-                        alert("Devi spuntare almeno una fascia.");
-                        btn.textContent = window.editingId ? "SALVA MODIFICHE" : "INVIA RICHIESTA";
-                        btn.style.opacity = "1";
-                        return;
-                    }
-                    selectedTimeSlots = Array.from(checked).map(cb => cb.value).join(", ");
-                }
-
-                const payload = {
-                    name:             document.getElementById('reqName').value,
-                    type:             reqType,
-                    swapWith:         isSwap ? document.getElementById('reqNameSwap').value : null,
-                    timeSlot:         selectedTimeSlots,
-                    dateFrom:         dFrom,
-                    dateTo:           (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                    effectiveDays:    (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
-                    notes:            document.getElementById('reqNotes').value.trim(),
-                    headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
-                    insertedInShifts:  false,
-                    insertedAt:        null
-                };
-
+                const doSyncRep = BIBBIA_CONFIG_R.autoSyncReperibilita !== false;
+                let requestId;
                 if (window.editingId) {
                     await updateDoc(doc(db, "richieste_turni", window.editingId), payload);
-                    await syncReperibilitaOverrides(window.editingId, { ...payload, obscured: false });
+                    requestId = window.editingId;
                 } else {
                     const newDocRef = await addDoc(collection(db, "richieste_turni"), {
                         ...payload,
                         timestamp: new Date().toISOString(),
                         obscured: false
                     });
-                    await syncReperibilitaOverrides(newDocRef.id, { ...payload, obscured: false });
+                    requestId = newDocRef.id;
+                }
+                if (doSyncRep) {
+                    await syncReperibilitaOverrides(requestId, { ...payload, obscured: false });
+                }
+                if (payload.type === 'cambio_turno') {
+                    await syncTurnoOverride(requestId, { ...payload, obscured: false });
                 }
 
                 document.getElementById('requestForm').reset();
                 window.editingId = null;
+                pendingRequestPayload = null;
                 document.getElementById('reqType').dispatchEvent(new Event('change'));
-                window.closeModal('add-modal');
+                window.closeModal('confirm-request-modal');
                 if (navigator.vibrate) navigator.vibrate(50);
 
             } catch (err) {
                 console.error(err);
                 alert("Errore durante il salvataggio.");
             } finally {
-                btn.textContent = "INVIA RICHIESTA";
+                btn.innerHTML = '<span class="material-icons-round" style="vertical-align:middle;font-size:18px;">check_circle</span> Sì, corretto';
                 btn.style.opacity = "1";
             }
         };
@@ -1196,6 +1494,7 @@
             if (confirm("Eliminare definitivamente?")) {
                 try {
                     await removeReperibilitaOverrides(id);
+                    await deleteDoc(doc(db, "turno_overrides", id)).catch(() => {});
                     await deleteDoc(doc(db, "richieste_turni", id));
                     window.closeModal('detail-modal');
                 }
@@ -1208,6 +1507,7 @@
                 try {
                     await updateDoc(doc(db, "richieste_turni", id), { obscured: true });
                     await removeReperibilitaOverrides(id);
+                    await deleteDoc(doc(db, "turno_overrides", id)).catch(() => {});
                     window.closeModal('detail-modal');
                 }
                 catch (e) { console.error(e); }
@@ -1218,7 +1518,14 @@
             try {
                 await updateDoc(doc(db, "richieste_turni", id), { obscured: false });
                 const r = requests.find(x => x.id === id);
-                if (r) await syncReperibilitaOverrides(id, { ...r, obscured: false });
+                if (r) {
+                    if (BIBBIA_CONFIG_R.autoSyncReperibilita !== false) {
+                        await syncReperibilitaOverrides(id, { ...r, obscured: false });
+                    }
+                    if (r.type === 'cambio_turno') {
+                        await syncTurnoOverride(id, { ...r, obscured: false });
+                    }
+                }
                 window.closeModal('detail-modal');
             }
             catch (e) { console.error(e); }
