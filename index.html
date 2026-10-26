@@ -1287,6 +1287,19 @@
             window.renderRequests();
         });
 
+        // Cessioni reperibilità già importate in automatico nel programma turni: sono le
+        // richieste che hanno almeno un documento in "reperibilita_overrides" (scritto da
+        // syncReperibilitaOverrides). Queste non restano "In attesa": diventano verdi con la
+        // scritta "Importata in automatico", anche se nessuno le ha segnate come inserite.
+        let autoRepIds = new Set();
+        const isAutoImported = (r) => r.type === 'copertura_reperibilita' && !r.obscured && autoRepIds.has(r.id);
+        onSnapshot(collection(db, "reperibilita_overrides"), (snapshot) => {
+            const ids = new Set();
+            snapshot.forEach(d => { const rid = d.data().requestId; if (rid) ids.add(rid); });
+            autoRepIds = ids;
+            window.renderRequests();
+        }, (err) => console.warn("Cessioni automatiche non leggibili:", err));
+
         // Tiene il payload pronto in attesa di conferma dell'utente nella finestrella di riepilogo.
         let pendingRequestPayload = null;
 
@@ -1635,6 +1648,7 @@
                 if (r.obscured) return false;
                 if (r.headNurseApproval === 'no') return false;
                 if (r.insertedInShifts) return false;
+                if (isAutoImported(r)) return false;
                 return true;
             };
 
@@ -1664,8 +1678,10 @@
 
                 let rowClass = r.obscured ? "row-obscured"
                     : r.headNurseApproval === 'no' ? "row-rejected"
-                    : r.insertedInShifts ? "row-confirmed"
+                    : (r.insertedInShifts || isAutoImported(r)) ? "row-confirmed"
                     : "row-pending";
+
+                const autoBadge = isAutoImported(r) ? `<span style="color:#059669;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #10b981;">✓ Importata in automatico</span>` : '';
 
                 let caposalaBadge = '';
                 if (APPROVAL_TYPES.includes(r.type) && !r.obscured) {
@@ -1696,9 +1712,9 @@
                             <div class="row-details">
                                 <span style="color:var(--text-sec);">Tipo:</span> <strong>${getLabel(r.type)}</strong> • <span style="color:var(--primary);font-weight:600;">${periodDetails}</span>
                             </div>
-                            ${(!r.obscured && (caposalaBadge || insertButton)) ? `
+                            ${(!r.obscured && (caposalaBadge || autoBadge || insertButton)) ? `
                             <div class="row-actions">
-                                <div>${caposalaBadge}</div>
+                                <div>${caposalaBadge}${autoBadge}</div>
                                 <div>${insertButton}</div>
                             </div>` : ''}
                         </div>
@@ -1763,7 +1779,9 @@
             html += `<div class="detail-item" style="background:#f8fafc;padding:12px;border-radius:8px;">
                         <div class="detail-label" style="color:var(--primary);">Stato Inserimento Turni</div>
                         <div class="detail-value" style="font-size:0.95rem;">
-                            ${r.insertedInShifts
+                            ${isAutoImported(r)
+                                ? `<span style="color:#059669;font-weight:700;">✓ Importata in automatico nel programma turni</span>`
+                                : r.insertedInShifts
                                 ? `<span style="color:#059669;font-weight:700;">✓ Inserita il ${r.insertedAt ? new Date(r.insertedAt).toLocaleString('it-IT') : 'Data non disponibile'}</span>`
                                 : `<span style="color:#64748b;font-weight:700;">⏳ In attesa di inserimento</span>`}
                         </div>
