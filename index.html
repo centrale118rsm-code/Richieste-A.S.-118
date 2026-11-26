@@ -202,6 +202,41 @@
         .bg-cambio-rep { background: #fef3c7; color: #b45309; }
         .bg-cambio-turno { background: #fde68a; color: #92400e; }
         .bg-recupero { background: #f3e8ff; color: #7e22ce; }
+        .bg-cambio-riposo { background: #ccfbf1; color: #0f766e; }
+
+        /* --- SCELTA RAPIDA DEL TIPO (riquadri grandi per le richieste più usate) --- */
+        .type-tiles { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .type-tile {
+            display: flex; align-items: center; gap: 8px; padding: 10px; border-radius: 12px;
+            border: 2px solid var(--border); background: #fff; cursor: pointer; text-align: left;
+            font-weight: 800; font-size: 0.8rem; color: var(--text-main); line-height: 1.15;
+        }
+        .type-tile .material-icons-round { font-size: 20px; width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .type-tile.active { border-color: var(--primary); background: #eff6ff; }
+        .type-tile:active { transform: scale(0.97); }
+        .type-tile[hidden] { display: none; }
+        .type-more-label { font-size: 0.72rem; font-weight: 700; color: var(--text-sec); margin: 4px 0; }
+
+        /* --- FILTRI DELLA LISTA --- */
+        .list-filters { display: flex; gap: 6px; margin-top: 10px; }
+        .list-filter {
+            flex: 1; padding: 7px 6px; border-radius: 999px; border: none; cursor: pointer;
+            background: rgba(255,255,255,0.12); color: rgba(255,255,255,0.85);
+            font-weight: 800; font-size: 0.72rem; white-space: nowrap;
+        }
+        .list-filter.active { background: #fde047; color: #0f172a; }
+        .list-filter b { font-weight: 900; }
+
+        /* --- STATO SULLA RIGA (in parole, oltre al colore) --- */
+        .status-chip { font-weight: 800; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; background: rgba(255,255,255,0.8); border: 1px solid; margin-right: 4px; display: inline-block; }
+        .st-wait { color: #b45309; border-color: #f59e0b; }
+        .st-ok { color: #059669; border-color: #10b981; }
+        .st-no { color: #dc2626; border-color: #ef4444; }
+        .riposo-box { background: #f0fdfa; padding: 12px; border-radius: 10px; border: 1px solid #99f6e4; }
+        .riposo-box label { color: #0f766e; }
+        .riposo-hint { color: #0f766e; font-size: 0.75rem; font-weight: 600; line-height: 1.4; margin-top: 8px; }
+        .riposo-preview { background: #fff; border: 1px dashed #5eead4; border-radius: 8px; padding: 8px 10px; margin-top: 8px; font-size: 0.8rem; font-weight: 600; line-height: 1.5; display: none; }
+        .user-switch { background: none; border: none; color: #93c5fd; font-size: 0.7rem; font-weight: 800; cursor: pointer; margin-left: 6px; text-decoration: underline; }
         .bg-default { background: #f1f5f9; color: #475569; }
 
         /* Stile Guida */
@@ -220,11 +255,11 @@
     <header>
         <div class="header-top">
             <div class="header-left">
-                <a href="area_autisti.html" class="btn-back"><span class="material-icons-round">arrow_back</span></a>
+                <a href="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" target="_top" class="btn-back" title="Torna ai turni"><span class="material-icons-round">arrow_back</span></a>
                 <div style="display: flex; flex-direction: column;">
                     <div class="page-title">Gestione Richieste</div>
                     <div id="loginStatusDisplay" style="display:none; font-size: 0.8rem; font-weight: 800; color: #fde047; margin-top: 2px;">
-                        LOGGATO COME: <span id="headerUserName" style="color: #ffffff; font-size: 0.95rem; font-weight: 900; text-transform: uppercase;"></span>
+                        LOGGATO COME: <span id="headerUserName" style="color: #ffffff; font-size: 0.95rem; font-weight: 900; text-transform: uppercase;"></span><button type="button" class="user-switch" onclick="window.changeUser()">cambia</button>
                     </div>
                 </div>
             </div>
@@ -238,7 +273,7 @@
                 <button class="btn-icon" onclick="window.toggleAdmin()" title="Accesso Admin" id="adminBtn">
                     <span class="material-icons-round" id="adminIcon">admin_panel_settings</span>
                 </button>
-                <button class="btn-icon" onclick="window.downloadJSON()" title="Scarica Backup JSON">
+                <button class="btn-icon" onclick="window.downloadJSON()" title="Scarica copia di tutte le richieste">
                     <span class="material-icons-round">download</span>
                 </button>
             </div>
@@ -246,7 +281,12 @@
         
         <div class="search-container" id="searchBox">
             <span class="material-icons-round">search</span>
-            <input type="text" id="searchInput" placeholder="Cerca nome o tipo..." onkeyup="window.renderRequests()">
+            <input type="search" id="searchInput" placeholder="Cerca nome, collega o tipo..." oninput="window.renderRequests()">
+        </div>
+        <div class="list-filters" id="listFilters">
+            <button type="button" class="list-filter active" data-f="tutte" onclick="window.setListFilter('tutte')">Tutte</button>
+            <button type="button" class="list-filter" data-f="mie" onclick="window.setListFilter('mie')">Le mie</button>
+            <button type="button" class="list-filter" data-f="attesa" onclick="window.setListFilter('attesa')">Da gestire <b id="pendingCount"></b></button>
         </div>
 
         <div class="main-tabs" id="mainTabs">
@@ -262,7 +302,9 @@
     <main id="requests-container"></main>
 
     <main id="turni-container">
-        <iframe id="iframeTurni" src="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" title="Consultazione Turni"></iframe>
+        <!-- Caricato solo quando si apre la scheda Turni: prima l'app turni intera si caricava
+             (e leggeva Firebase) a ogni apertura del portale, anche senza mai guardarla. -->
+        <iframe id="iframeTurni" data-src="https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/" title="Consultazione Turni"></iframe>
     </main>
 
     <button class="fab" id="mainFab" onclick="window.openAddModal()">
@@ -317,6 +359,18 @@
                    4. Clicca su <strong>INVIA RICHIESTA</strong>.</p>
             </details>
             <details>
+                <summary>Cambio riposo (scambiare i giorni di riposo)</summary>
+                <p>Se tu riposi un giorno e un collega riposa un altro giorno, potete scambiarvi i riposi.<br>
+                   1. Tocca <strong>+</strong> e scegli <strong>Cambio riposo</strong>.<br>
+                   2. Scegli il collega, poi il <strong>tuo giorno di riposo</strong> e quello <strong>del collega</strong> (l'elenco mostra solo i riposi che risultano nei turni).<br>
+                   3. Nel tuo giorno di riposo lavori tu, con il turno del collega, e lui riposa. Nel suo giorno di riposo riposi tu e lui fa il tuo turno.<br>
+                   Mettetevi d'accordo prima di inviare: il portale controlla che i giorni corrispondano ai turni.</p>
+            </details>
+            <details>
+                <summary>Trovare le tue richieste</summary>
+                <p>Sotto la ricerca ci sono tre pulsanti: <strong>Tutte</strong>, <strong>Le mie</strong> (anche quelle in cui sei tu il collega) e <strong>Da gestire</strong>. Su ogni richiesta c'è scritto a che punto è (da approvare, da inserire, inserita). Per cambiare nome su questo telefono tocca <strong>cambia</strong> accanto al tuo nome in alto.</p>
+            </details>
+            <details>
                 <summary>Modificare una richiesta inviata</summary>
                 <p>Se hai commesso un errore o le tue necessità sono cambiate, clicca sulla tua richiesta dalla bacheca e premi il pulsante azzurro <strong>Modifica</strong>. 
                 <br><strong style="color:var(--primary);">Attenzione:</strong> Le richieste concluse (già inserite nei turni) possono essere modificate solo dall'amministratore.</p>
@@ -358,11 +412,27 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Tipo di Richiesta</label>
+                    <label>Cosa vuoi chiedere?</label>
+                    <!-- Scelta rapida: un tocco per le richieste più usate. Ogni riquadro
+                         seleziona semplicemente la voce corrispondente del menu qui sotto,
+                         che resta lì con TUTTI i tipi di richiesta. -->
+                    <div class="type-tiles" id="typeTiles">
+                        <button type="button" class="type-tile" data-type="cambio_turno"><span class="material-icons-round bg-cambio-turno">swap_horiz</span>Cambio turno</button>
+                        <button type="button" class="type-tile" data-type="cambio_riposo"><span class="material-icons-round bg-cambio-riposo">event_repeat</span>Cambio riposo</button>
+                        <button type="button" class="type-tile" data-type="copertura_reperibilita"><span class="material-icons-round bg-copertura">shield</span>Cessione reperibilità</button>
+                        <button type="button" class="type-tile" data-type="ferie"><span class="material-icons-round bg-ferie">beach_access</span>Congedo ordinario</button>
+                    </div>
+                    <div class="type-more-label">oppure scegli fra tutti i tipi:</div>
                     <select id="reqType" class="form-control" required>
                         <option value="" disabled selected>Seleziona tipo...</option>
                         
                         <!-- ⚠️ I value corrispondono ESATTAMENTE alle chiavi in LABELS/ICONS/COLORS -->
+                        <optgroup label="🔄 CAMBI E COPERTURE">
+                            <option value="copertura_reperibilita">Cessione reperibilità</option>
+                            <option value="cambio_turno">Cambio Turno</option>
+                            <option value="cambio_riposo">Cambio Riposo (scambio dei giorni di riposo)</option>
+                        </optgroup>
+
                         <optgroup label="🏖️ FERIE / CONGEDO">
                             <option value="ferie">Congedo ordinario</option>
                             <option value="ferie_anno_prec">Congedo ordinario anno precedente</option>
@@ -383,10 +453,6 @@
                             <option value="aspettativa">Aspettativa</option>
                         </optgroup>
                         
-                        <optgroup label="🔄 CAMBI E COPERTURE">
-                            <option value="copertura_reperibilita">Cessione reperibilità</option>
-                            <option value="cambio_turno">Cambio Turno</option>
-                        </optgroup>
                     </select>
                 </div>
 
@@ -475,6 +541,24 @@
                     <div style="color:#64748b; font-size:0.72rem; font-weight:500; margin-top:8px;">
                         Indica il turno di ciascuno prima dello scambio: verrà controllato che corrisponda davvero al programma turni, altrimenti la richiesta non verrà accettata.
                     </div>
+                </div>
+
+                <!-- Cambio riposo: io lavoro nel mio giorno di riposo al posto del collega, lui
+                     riposa quel giorno; poi io riposo nel suo giorno di riposo e lui lavora al
+                     posto mio. I giorni si scelgono fra i riposi che risultano nel programma turni. -->
+                <div class="form-group riposo-box" id="riposo-group" style="display:none;">
+                    <div class="form-group" style="margin-bottom:10px;">
+                        <label id="labelMyRest">Il tuo giorno di riposo (in cui andrai a lavorare)</label>
+                        <select id="reqMyRestSel" class="form-control"><option value="">Seleziona prima l'operatore...</option></select>
+                        <input type="date" id="reqMyRestDate" class="form-control" style="display:none;">
+                    </div>
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label id="labelOtherRest">Giorno di riposo del collega (in cui riposerai tu)</label>
+                        <select id="reqOtherRestSel" class="form-control"><option value="">Seleziona prima il collega...</option></select>
+                        <input type="date" id="reqOtherRestDate" class="form-control" style="display:none;">
+                    </div>
+                    <div class="riposo-preview" id="riposoPreview"></div>
+                    <div class="riposo-hint">Vale tra diurnisti o tra turnisti. Nel tuo giorno di riposo lavori tu al posto del collega (con il suo turno) e lui riposa; nel suo giorno di riposo riposi tu e lui lavora al posto tuo. Il collega deve essere d'accordo prima dell'invio.</div>
                 </div>
 
                 <!-- Avviso approvazione -->
@@ -772,7 +856,7 @@
 
         // Popola il <select id="repDateSelect"> con le date reperibilità dell'operatore
         // selezionato in "Operatore", raggruppate per mese come richiesto.
-        async function populateRepDateSelect() {
+        async function populateRepDateSelect(keepValue) {
             const sel = document.getElementById('repDateSelect');
             const emptyMsg = document.getElementById('repDateEmptyMsg');
             if (!sel) return;
@@ -787,6 +871,12 @@
 
             await loadReperibilitaData();
             const dates = getMyReperibilitaDates(operatorName);
+            // In modifica: la data già salvata resta sceglibile anche se ormai è più vecchia
+            // di una settimana (prima spariva dall'elenco e la richiesta non si poteva salvare).
+            if (keepValue && !dates.some(d => d.iso === keepValue)) {
+                const kp = keepValue.split("-").map(Number);
+                if (kp.length === 3 && kp[1] >= 1 && kp[1] <= 12) dates.unshift({ mNum: kp[1], day: kp[2], iso: keepValue });
+            }
 
             sel.innerHTML = '';
             if (dates.length === 0) {
@@ -812,6 +902,141 @@
                 opt.textContent = String(d.day).padStart(2, "0") + " " + REP_MONTH_NAME[d.mNum];
                 currentOptgroup.appendChild(opt);
             });
+            if (keepValue) sel.value = keepValue;
+        }
+
+        // ============================================================
+        // CAMBIO RIPOSO — A riposa il giorno X, B riposa il giorno Y. Con lo scambio:
+        //   giorno X → A lavora al posto di B (con il turno di B), B riposa;
+        //   giorno Y → A riposa, B lavora al posto di A (con il turno di A).
+        // Nel programma turni sono due scambi di casella fra A e B (uno nel giorno X e
+        // uno nel giorno Y), scritti in "turno_overrides" come i Cambi Turno.
+        // ============================================================
+        const SHIFT_NAMES_R = { M: 'Mattina', P: 'Pomeriggio', N: 'Notte', R: 'Riposo', SM: 'Smonto' };
+        const isWorkCode = (c) => c === 'M' || c === 'P' || c === 'N';
+        function isoParts(iso) {
+            const p = String(iso || "").split("-").map(Number);
+            return p.length === 3 ? { y: p[0], m: p[1], d: p[2] } : null;
+        }
+        function shiftOn(name, iso) {
+            const p = isoParts(iso);
+            if (!p || p.y !== REP_YEAR) return { raw: "", code: "" };
+            const raw = getShiftCodeFor(name, p.m, p.d);
+            return { raw, code: normalizeShiftCodeR(raw) };
+        }
+        function shiftLabel(sh) {
+            if (!sh || !sh.code) return '';
+            return (SHIFT_NAMES_R[sh.code] || sh.code) + (/\/\s*R/i.test(sh.raw) ? ' + reperibilità' : '');
+        }
+        // Giorni di riposo (R) di un operatore da oggi in poi, letti dal programma turni.
+        function getRestDates(operatorName) {
+            const today = new Date(); today.setHours(0, 0, 0, 0);
+            const nNorm = normalizeRepNameR(operatorName);
+            const out = [];
+            Object.keys(SHIFT_MATRIX_R).forEach(key => {
+                const [mNum, day] = key.split("_").map(Number);
+                const dateObj = new Date(REP_YEAR, mNum - 1, day);
+                if (dateObj < today) return;
+                const dayData = SHIFT_MATRIX_R[key];
+                let raw = "";
+                for (const k in dayData) if (normalizeRepNameR(k) === nNorm) raw = dayData[k];
+                if (normalizeShiftCodeR(raw) !== 'R') return;
+                out.push({ mNum, day, iso: REP_YEAR + "-" + String(mNum).padStart(2, "0") + "-" + String(day).padStart(2, "0") });
+            });
+            out.sort((a, b) => (a.mNum - b.mNum) || (a.day - b.day));
+            return out;
+        }
+        const WEEKDAYS_R = ['dom', 'lun', 'mar', 'mer', 'gio', 'ven', 'sab'];
+        function fillRestSelect(sel, dates, keepValue, placeholderText) {
+            const list = dates.slice();
+            if (keepValue && !list.some(d => d.iso === keepValue)) {
+                const kp = isoParts(keepValue);
+                if (kp) list.unshift({ mNum: kp.m, day: kp.d, iso: keepValue });
+            }
+            sel.innerHTML = '';
+            const ph = document.createElement('option');
+            ph.value = ""; ph.textContent = list.length ? placeholderText : "Nessun riposo trovato nel programma turni";
+            sel.appendChild(ph);
+            let curM = null, og = null;
+            list.forEach(d => {
+                if (d.mNum !== curM) { curM = d.mNum; og = document.createElement('optgroup'); og.label = REP_MONTH_NAME[d.mNum] + " " + REP_YEAR; sel.appendChild(og); }
+                const o = document.createElement('option');
+                o.value = d.iso;
+                o.textContent = WEEKDAYS_R[new Date(REP_YEAR, d.mNum - 1, d.day).getDay()] + " " + String(d.day).padStart(2, "0") + " " + REP_MONTH_NAME[d.mNum];
+                og.appendChild(o);
+            });
+            sel.value = keepValue && list.some(d => d.iso === keepValue) ? keepValue : "";
+        }
+        // Valori scelti (dal menu con i riposi, oppure dal calendario se il file turni non si legge).
+        function getRiposoValues() {
+            const mySel = document.getElementById('reqMyRestSel'), otSel = document.getElementById('reqOtherRestSel');
+            const my = mySel.style.display !== 'none' ? mySel.value : document.getElementById('reqMyRestDate').value;
+            const other = otSel.style.display !== 'none' ? otSel.value : document.getElementById('reqOtherRestDate').value;
+            return { my, other };
+        }
+        let riposoPrefill = null; // { my, other } in modifica
+        async function populateRiposoSelects() {
+            const me = document.getElementById('reqName').value || currentUser;
+            const other = document.getElementById('reqNameSwap').value;
+            const mySel = document.getElementById('reqMyRestSel'), otSel = document.getElementById('reqOtherRestSel');
+            const myDate = document.getElementById('reqMyRestDate'), otDate = document.getElementById('reqOtherRestDate');
+            const cur = getRiposoValues();
+            const keepMy = (riposoPrefill && riposoPrefill.my) || cur.my;
+            const keepOther = (riposoPrefill && riposoPrefill.other) || cur.other;
+            document.getElementById('labelMyRest').textContent = (me && me !== 'Centrale 118' ? 'Giorno di riposo di ' + me : 'Il tuo giorno di riposo') + ' (in cui lavorerà)';
+            document.getElementById('labelOtherRest').textContent = other ? ('Giorno di riposo di ' + other + ' (in cui riposerà ' + (me && me !== 'Centrale 118' ? me : 'tu') + ')') : 'Giorno di riposo del collega';
+            mySel.innerHTML = '<option value="">Caricamento turni...</option>';
+            await loadReperibilitaData();
+            if (!repDataLoaded) {
+                // File turni non raggiungibile: si scelgono le date a mano dal calendario.
+                mySel.style.display = 'none'; otSel.style.display = 'none';
+                myDate.style.display = 'block'; otDate.style.display = 'block';
+                if (keepMy) myDate.value = keepMy;
+                if (keepOther) otDate.value = keepOther;
+            } else {
+                mySel.style.display = 'block'; otSel.style.display = 'block';
+                myDate.style.display = 'none'; otDate.style.display = 'none';
+                if (!me || me === 'Centrale 118') mySel.innerHTML = '<option value="">Seleziona prima l\'operatore...</option>';
+                else fillRestSelect(mySel, getRestDates(me), keepMy, 'Scegli il giorno...');
+                if (!other) otSel.innerHTML = '<option value="">Seleziona prima il collega...</option>';
+                else fillRestSelect(otSel, getRestDates(other), keepOther, 'Scegli il giorno...');
+            }
+            riposoPrefill = null;
+            updateRiposoPreview();
+        }
+        // Spiega in parole cosa succede nei due giorni, prima dell'invio.
+        function riposoPlanHtml(me, other, x, y) {
+            const shOtherX = shiftOn(other, x), shMeY = shiftOn(me, y);
+            const workX = shiftLabel(shOtherX), workY = shiftLabel(shMeY);
+            return `<div>📅 <b>${esc(formatDateIt(x))}</b>: lavora <b>${esc(me)}</b>${workX ? ' (' + esc(workX) + ')' : ''} al posto di ${esc(other)}, che riposa.</div>
+                    <div>📅 <b>${esc(formatDateIt(y))}</b>: riposa <b>${esc(me)}</b>, lavora <b>${esc(other)}</b>${workY ? ' (' + esc(workY) + ')' : ''} al posto suo.</div>`;
+        }
+        function updateRiposoPreview() {
+            const box = document.getElementById('riposoPreview');
+            const me = document.getElementById('reqName').value || currentUser;
+            const other = document.getElementById('reqNameSwap').value;
+            const v = getRiposoValues();
+            if (!me || !other || !v.my || !v.other) { box.style.display = 'none'; return; }
+            box.innerHTML = riposoPlanHtml(me, other, v.my, v.other);
+            box.style.display = 'block';
+        }
+        // Controlla sul programma turni che i due riposi siano veri e che nell'altro giorno
+        // ciascuno stia davvero lavorando. Ritorna l'elenco dei problemi (vuoto = tutto ok).
+        function checkRiposoSwap(me, other, x, y) {
+            const out = [];
+            if (!repDataLoaded) return out; // file non leggibile: la richiesta passa come testo
+            const pretty = (sh) => sh.code ? (SHIFT_NAMES_R[sh.code] || sh.raw) : (sh.raw ? '"' + sh.raw + '"' : 'vuoto');
+            const meX = shiftOn(me, x), otX = shiftOn(other, x), meY = shiftOn(me, y), otY = shiftOn(other, y);
+            if (meX.code !== 'R') out.push(`Il ${formatDateIt(x)} ${me} non risulta di riposo (risulta: ${pretty(meX)}).`);
+            if (!isWorkCode(otX.code)) out.push(`Il ${formatDateIt(x)} ${other} non risulta in servizio (risulta: ${pretty(otX)}): non c'è un turno da prendere.`);
+            if (otY.code !== 'R') out.push(`Il ${formatDateIt(y)} ${other} non risulta di riposo (risulta: ${pretty(otY)}).`);
+            if (!isWorkCode(meY.code)) out.push(`Il ${formatDateIt(y)} ${me} non risulta in servizio (risulta: ${pretty(meY)}): non c'è un turno da cedere.`);
+            return out;
+        }
+
+        // Testo sicuro da inserire nell'HTML (nomi, note): evita che un testo con < > rompa la pagina.
+        function esc(v) {
+            return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
         }
 
         // Selezionata una data reperibilità: la riporta nel campo nascosto reqDateFrom
@@ -828,7 +1053,9 @@
             const nameSel = document.getElementById('reqName');
             if (nameSel) {
                 nameSel.addEventListener('change', function() {
-                    if (document.getElementById('reqType').value === 'copertura_reperibilita') populateRepDateSelect();
+                    const t = document.getElementById('reqType').value;
+                    if (t === 'copertura_reperibilita') populateRepDateSelect();
+                    if (t === 'cambio_riposo') populateRiposoSelects();
                 });
             }
             const allSlotCb = document.getElementById('reqTimeSlotAll');
@@ -836,12 +1063,26 @@
                 allSlotCb.addEventListener('change', function() {
                     document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => { if (!cb.disabled) cb.checked = allSlotCb.checked; });
                 });
+                // "Tutta la fascia" si spunta/toglie da sola in base alle singole fasce.
+                document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => cb.addEventListener('change', () => {
+                    allSlotCb.checked = Array.from(document.querySelectorAll('input[name="reqTimeSlot"]')).every(x => x.checked);
+                }));
             }
+            ['reqMyRestSel', 'reqOtherRestSel', 'reqMyRestDate', 'reqOtherRestDate'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.addEventListener('change', updateRiposoPreview);
+            });
+            document.querySelectorAll('#typeTiles .type-tile').forEach(t => t.addEventListener('click', () => {
+                const sel = document.getElementById('reqType');
+                sel.value = t.dataset.type;
+                sel.dispatchEvent(new Event('change'));
+            }));
             const swapSel = document.getElementById('reqNameSwap');
             if (swapSel) {
                 swapSel.addEventListener('change', function() {
                     const lbl = document.getElementById('reqOtherShiftLabel');
                     if (lbl) lbl.textContent = this.value ? ('Turno di ' + this.value) : 'Il suo turno';
+                    if (document.getElementById('reqType').value === 'cambio_riposo') populateRiposoSelects();
                 });
             }
             applyBibbiaRequestTypes(); // nasconde i tipi di richiesta disattivati dall'Area Admin
@@ -853,6 +1094,7 @@
         const LABELS = {
             "copertura_reperibilita": "Cessione Reperibilità",
             "cambio_turno":           "Cambio Turno",
+            "cambio_riposo":          "Cambio Riposo",
             "ferie":                  "Congedo Ordinario",
             "ferie_anno_prec":        "Congedo Anno Precedente",
             "permesso_ore":           "Permesso straordinario fruibile ad Ore",
@@ -869,6 +1111,7 @@
         const ICONS = {
             "copertura_reperibilita": "shield",
             "cambio_turno":           "swap_horiz",
+            "cambio_riposo":          "event_repeat",
             "ferie":                  "beach_access",
             "ferie_anno_prec":        "history",
             "permesso_ore":           "schedule",
@@ -885,6 +1128,7 @@
         const COLORS = {
             "copertura_reperibilita": "bg-copertura",
             "cambio_turno":           "bg-cambio-turno",
+            "cambio_riposo":          "bg-cambio-riposo",
             "ferie":                  "bg-ferie",
             "ferie_anno_prec":        "bg-ferie-prec",
             "permesso_ore":           "bg-permesso-ore",
@@ -1029,12 +1273,23 @@
             }
         }
 
+        // Cambiare nome sul dispositivo (prima l'unico modo era cancellare i dati del browser).
+        window.changeUser = function() {
+            const lm = document.getElementById('login-modal');
+            const sel = document.getElementById('loginSelectName');
+            if (currentUser) sel.value = currentUser;
+            lm.style.display = 'flex';
+            lm.style.opacity = '1';
+            lm.style.zIndex = '9999';
+        };
+
         window.saveUserLogin = function() {
             const name = document.getElementById('loginSelectName').value;
             if (!name) { alert("Seleziona il tuo nome prima di procedere."); return; }
             localStorage.setItem('118_user_name', name);
             currentUser = name;
             updateHeaderName(currentUser);
+            if (window.renderRequests) window.renderRequests();
             const lm = document.getElementById('login-modal');
             lm.style.opacity = '0';
             setTimeout(() => { lm.style.display = 'none'; checkFirstVisitAndShowGuide(); }, 300);
@@ -1069,7 +1324,7 @@
                             <span style="font-size: 0.7rem; font-weight: 700; color: #854d0e;">${dateStr}</span>
                             ${deleteBtn}
                         </div>
-                        <div style="font-size: 0.85rem; color: #451a03; white-space: pre-wrap;">${n.testo}</div>
+                        <div style="font-size: 0.85rem; color: #451a03; white-space: pre-wrap;">${esc(n.testo)}</div>
                     </div>`;
             });
         };
@@ -1105,6 +1360,9 @@
             const isRichieste = tabName === 'richieste';
             document.getElementById('requests-container').style.display = isRichieste ? 'block' : 'none';
             document.getElementById('searchBox').style.display = isRichieste ? 'block' : 'none';
+            document.getElementById('listFilters').style.display = isRichieste ? 'flex' : 'none';
+            const fr = document.getElementById('iframeTurni');
+            if (!isRichieste && fr && !fr.getAttribute('src')) fr.setAttribute('src', fr.dataset.src);
             document.getElementById('mainFab').style.display = isRichieste ? 'flex' : 'none';
             document.getElementById('turni-container').style.display = isRichieste ? 'none' : 'block';
             document.getElementById('btnTabRichieste').classList.toggle('active', isRichieste);
@@ -1131,8 +1389,11 @@
             const cambioShiftsGroup = document.getElementById('cambio-shifts-group');
             const myShiftSel     = document.getElementById('reqMyShift');
             const otherShiftSel  = document.getElementById('reqOtherShift');
+            const riposoGroup    = document.getElementById('riposo-group');
+            document.querySelectorAll('#typeTiles .type-tile').forEach(t => t.classList.toggle('active', t.dataset.type === val));
 
             // reset
+            riposoGroup.style.display = 'none';
             swapGroup.style.display = 'none'; swapInput.required = false;
             timeSlotGroup.style.display = 'none';
             approvalGroup.style.display = 'none';
@@ -1149,9 +1410,17 @@
             labelDateFrom.textContent = "Dal Giorno";
             document.getElementById('reqDateFrom').required = true;
 
-            if (val === 'cambio_turno' || val === 'copertura_reperibilita') {
+            if (val === 'cambio_turno' || val === 'copertura_reperibilita' || val === 'cambio_riposo') {
                 swapGroup.style.display = 'block';
                 swapInput.required = true;
+            }
+            if (val === 'cambio_riposo') {
+                riposoGroup.style.display = 'block';
+                dateFromGroup.style.display = 'none';
+                dateToGroup.style.display = 'none';
+                daysGroup.style.display = 'none';
+                document.getElementById('reqDateFrom').required = false;
+                populateRiposoSelects();
             }
             if (val === 'cambio_turno') {
                 cambioInfo.style.display = 'block';
@@ -1185,6 +1454,7 @@
             window.editingId = null;
             document.getElementById('modal-title-add').textContent = "Nuova Richiesta";
             document.getElementById('requestForm').reset();
+            riposoPrefill = null;
             document.getElementById('btnSubmit').textContent = "INVIA RICHIESTA";
 
             const nameSelect = document.getElementById('reqName');
@@ -1210,6 +1480,10 @@
             nameSelect.disabled = !(currentUser === 'Centrale 118' || window.isAdmin);
             nameSelect.value = r.name;
 
+            document.getElementById('requestForm').reset();
+            nameSelect.value = r.name;
+            if (r.swapWith) document.getElementById('reqNameSwap').value = r.swapWith;
+            if (r.type === 'cambio_riposo') riposoPrefill = { my: r.dateFrom, other: r.restDateOther };
             document.getElementById('reqType').value = r.type;
             document.getElementById('reqType').dispatchEvent(new Event('change'));
 
@@ -1231,16 +1505,10 @@
                 document.querySelectorAll('input[name="reqTimeSlot"]').forEach(cb => {
                     cb.checked = slots.includes(cb.value);
                 });
-                const nonHeadSlots = ["20:00/00:00", "00:00/07:00", "07:00/13:00"];
-                document.getElementById('reqTimeSlotAll').checked = nonHeadSlots.every(s => slots.includes(s));
+                document.getElementById('reqTimeSlotAll').checked = Object.keys(SLOT_INDEX).every(s => slots.includes(s));
                 // La lista reperibilità del select viene popolata in modo asincrono (legge
                 // turni.xlsx): quando è pronta, riseleziona la data già salvata sulla richiesta.
-                if (r.dateFrom) {
-                    populateRepDateSelect().then(() => {
-                        const repSel = document.getElementById('repDateSelect');
-                        if (repSel) repSel.value = r.dateFrom;
-                    });
-                }
+                if (r.dateFrom) populateRepDateSelect(r.dateFrom);
             }
 
             document.getElementById('btnSubmit').textContent = "SALVA MODIFICHE";
@@ -1258,6 +1526,7 @@
                 docSnap.exists() ? docSnap.data() : {}
             );
             applyBibbiaRequestTypes();
+            if (window.renderRequests) window.renderRequests();
         });
 
         // Nasconde dal menu "Tipo di Richiesta" le voci disattivate dall'admin. Se l'utente
@@ -1271,6 +1540,7 @@
                 opt.disabled = !enabled;
                 opt.style.display = enabled ? '' : 'none';
             });
+            document.querySelectorAll('#typeTiles .type-tile').forEach(t => { t.hidden = tipi[t.dataset.type] === false; });
             // Se un intero optgroup è tutto disattivato, lo nasconde per pulizia.
             document.querySelectorAll('#reqType optgroup').forEach(og => {
                 const opts = Array.from(og.querySelectorAll('option'));
@@ -1292,7 +1562,19 @@
         // syncReperibilitaOverrides). Queste non restano "In attesa": diventano verdi con la
         // scritta "Importata in automatico", anche se nessuno le ha segnate come inserite.
         let autoRepIds = new Set();
-        const isAutoImported = (r) => r.type === 'copertura_reperibilita' && !r.obscured && autoRepIds.has(r.id);
+        // Cambi turno / cambi riposo già applicati da soli nel programma turni: hanno il loro
+        // documento in "turno_overrides" e la Bibbia ha "Cambio turno automatico" attivo.
+        let autoSwapIds = new Set();
+        const isSwapType = (t) => t === 'cambio_turno' || t === 'cambio_riposo';
+        const isAutoImported = (r) => !r.obscured && (
+            (r.type === 'copertura_reperibilita' && autoRepIds.has(r.id)) ||
+            (isSwapType(r.type) && BIBBIA_CONFIG_R.autoApplyCambioTurno === true && autoSwapIds.has(r.id)));
+        onSnapshot(collection(db, "turno_overrides"), (snapshot) => {
+            const ids = new Set();
+            snapshot.forEach(d => { const rid = d.data().requestId; if (rid) ids.add(rid); });
+            autoSwapIds = ids;
+            window.renderRequests();
+        }, (err) => console.warn("Cambi automatici non leggibili:", err));
         onSnapshot(collection(db, "reperibilita_overrides"), (snapshot) => {
             const ids = new Set();
             snapshot.forEach(d => { const rid = d.data().requestId; if (rid) ids.add(rid); });
@@ -1309,7 +1591,37 @@
             const reqType = document.getElementById('reqType').value;
             const dFrom   = document.getElementById('reqDateFrom').value;
             const dToRaw  = document.getElementById('reqDateTo').value;
-            const isSwap  = (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita');
+            const isSwap  = (reqType === 'cambio_turno' || reqType === 'copertura_reperibilita' || reqType === 'cambio_riposo');
+            const myNameV = document.getElementById('reqName').value;
+            const swapV   = document.getElementById('reqNameSwap').value;
+            if (!myNameV) { alert("Seleziona l'operatore."); return; }
+            if (isSwap && !swapV) { alert("Seleziona il collega con cui fai il cambio."); return; }
+            if (isSwap && normalizeRepNameR(swapV) === normalizeRepNameR(myNameV)) {
+                alert("Il collega deve essere una persona diversa dall'operatore.");
+                return;
+            }
+            if (!isSwap && dFrom && dToRaw && dToRaw < dFrom) {
+                alert("La data \"Al giorno\" è prima di \"Dal giorno\": controlla le date.");
+                return;
+            }
+
+            let restDateOther = null, riposoDate = null;
+            if (reqType === 'cambio_riposo') {
+                const v = getRiposoValues();
+                if (!v.my || !v.other) { alert("Scegli i due giorni di riposo da scambiare."); return; }
+                if (v.my === v.other) { alert("I due giorni di riposo devono essere diversi."); return; }
+                const btn = document.getElementById('btnSubmit');
+                const prevBtnText = btn.textContent;
+                btn.textContent = "Controllo turni...";
+                await loadReperibilitaData();
+                btn.textContent = prevBtnText;
+                const problems = checkRiposoSwap(myNameV, swapV, v.my, v.other);
+                if (problems.length) {
+                    alert("⚠️ Il cambio riposo non corrisponde al programma turni:\n\n" + problems.join("\n") + "\n\nScegli giorni in cui uno riposa e l'altro lavora.");
+                    return;
+                }
+                riposoDate = v.my; restDateOther = v.other;
+            }
 
             let selectedTimeSlots = null;
             if (reqType === 'copertura_reperibilita') {
@@ -1369,16 +1681,26 @@
                 // non l'invio della richiesta in sé.
             }
 
+            if (reqType === 'cambio_riposo') {
+                // turno che ciascuno va a fare: io il turno del collega nel mio riposo,
+                // il collega il mio turno nel suo riposo (solo informativo).
+                myShift    = normalizeShiftCodeR(shiftOn(myNameV, restDateOther).raw) || null;
+                otherShift = normalizeShiftCodeR(shiftOn(swapV, riposoDate).raw) || null;
+            }
+            const noDays = (reqType === 'copertura_reperibilita' || reqType === 'cambio_riposo');
+            const dateMain = reqType === 'cambio_riposo' ? riposoDate : dFrom;
+
             const payload = {
-                name:             document.getElementById('reqName').value,
+                name:             myNameV,
                 type:             reqType,
-                swapWith:         isSwap ? document.getElementById('reqNameSwap').value : null,
+                swapWith:         isSwap ? swapV : null,
                 timeSlot:         selectedTimeSlots,
                 myShift:          myShift,
                 otherShift:       otherShift,
-                dateFrom:         dFrom,
-                dateTo:           (reqType === 'copertura_reperibilita' || !dToRaw) ? dFrom : dToRaw,
-                effectiveDays:    (reqType === 'copertura_reperibilita') ? "N/A" : (document.getElementById('reqDays').value || "1"),
+                dateFrom:         dateMain,
+                dateTo:           (noDays || !dToRaw) ? dateMain : dToRaw,
+                restDateOther:    restDateOther,
+                effectiveDays:    noDays ? "N/A" : (document.getElementById('reqDays').value || "1"),
                 notes:            document.getElementById('reqNotes').value.trim(),
                 headNurseApproval: APPROVAL_TYPES.includes(reqType) ? 'attesa' : 'non_richiesta',
                 insertedInShifts:  false,
@@ -1406,16 +1728,22 @@
                 : `${formatDateIt(payload.dateFrom)} → ${formatDateIt(payload.dateTo)}`;
 
             let html = '';
-            html += row('Operatore', payload.name);
+            html += row('Operatore', esc(payload.name));
             html += row('Tipo di richiesta', LABELS[payload.type] || payload.type);
-            html += row(payload.type === 'copertura_reperibilita' ? 'Data reperibilità' : 'Giorni', dateLabel);
+            if (payload.swapWith) html += row('Con chi', esc(payload.swapWith));
+            if (payload.type === 'cambio_riposo') {
+                html += `<div style="background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;padding:10px;font-size:0.85rem;line-height:1.6;">${riposoPlanHtml(payload.name, payload.swapWith, payload.dateFrom, payload.restDateOther)}</div>`;
+            } else {
+                html += row(payload.type === 'copertura_reperibilita' ? 'Data reperibilità' : 'Giorni', dateLabel);
+            }
             if (payload.timeSlot) html += row('Fasce cedute', payload.timeSlot);
-            if (payload.swapWith) html += row('Con chi', payload.swapWith);
             const SHIFT_NAMES_SUMMARY = { M: 'Mattina', P: 'Pomeriggio', N: 'Notte' };
-            if (payload.myShift) html += row('Il tuo turno', SHIFT_NAMES_SUMMARY[payload.myShift] || payload.myShift);
-            if (payload.otherShift) html += row('Turno di ' + (payload.swapWith || 'collega'), SHIFT_NAMES_SUMMARY[payload.otherShift] || payload.otherShift);
-            if (payload.type !== 'copertura_reperibilita' && payload.type !== 'cambio_turno') html += row('Giorni effettivi', payload.effectiveDays);
-            if (payload.notes) html += row('Note', payload.notes);
+            if (payload.type === 'cambio_turno') {
+                if (payload.myShift) html += row('Il tuo turno', SHIFT_NAMES_SUMMARY[payload.myShift] || payload.myShift);
+                if (payload.otherShift) html += row('Turno di ' + esc(payload.swapWith || 'collega'), SHIFT_NAMES_SUMMARY[payload.otherShift] || payload.otherShift);
+            }
+            if (payload.effectiveDays !== 'N/A' && payload.type !== 'cambio_turno') html += row('Giorni effettivi', esc(payload.effectiveDays));
+            if (payload.notes) html += row('Note', esc(payload.notes));
             box.innerHTML = html || '<div class="note-empty">Nessun dettaglio da mostrare.</div>';
         }
 
@@ -1436,19 +1764,28 @@
         // Scrive/aggiorna l'override di scambio turno per una richiesta "cambio_turno" già
         // validata. La lettura/applicazione effettiva avviene nel programma turni A.S. 26,
         // e solo se l'automazione "Cambio turno automatico" è attiva nella Bibbia.
+        // Il Cambio Riposo usa due documenti: <id> per il giorno di riposo di chi chiede e
+        // <id>_riposo per il giorno di riposo del collega (stesso formato, letto già così
+        // dal programma turni: in ciascun giorno i due si scambiano la casella).
+        async function removeTurnoOverrides(requestId) {
+            await Promise.all([
+                deleteDoc(doc(db, "turno_overrides", requestId)).catch(() => {}),
+                deleteDoc(doc(db, "turno_overrides", requestId + "_riposo")).catch(() => {})
+            ]);
+        }
         async function syncTurnoOverride(requestId, r) {
-            const overrideRef = doc(db, "turno_overrides", requestId);
-            if (r.type !== 'cambio_turno' || r.obscured || !r.swapWith || !r.dateFrom) {
-                await deleteDoc(overrideRef).catch(() => {});
+            if (!isSwapType(r.type) || r.obscured || !r.swapWith || !r.dateFrom ||
+                (r.type === 'cambio_riposo' && !r.restDateOther)) {
+                await removeTurnoOverrides(requestId);
                 return;
             }
-            await setDoc(overrideRef, {
-                date: r.dateFrom,
-                driverA: r.name,
-                driverB: r.swapWith,
-                requestId: requestId,
-                updatedAt: new Date().toISOString()
-            });
+            const base = { driverA: r.name, driverB: r.swapWith, requestId: requestId, kind: r.type, updatedAt: new Date().toISOString() };
+            await setDoc(doc(db, "turno_overrides", requestId), { ...base, date: r.dateFrom });
+            if (r.type === 'cambio_riposo') {
+                await setDoc(doc(db, "turno_overrides", requestId + "_riposo"), { ...base, date: r.restDateOther });
+            } else {
+                await deleteDoc(doc(db, "turno_overrides", requestId + "_riposo")).catch(() => {});
+            }
         }
 
         // Conferma definitiva: qui avviene il vero salvataggio su Firestore.
@@ -1463,6 +1800,16 @@
                 const doSyncRep = BIBBIA_CONFIG_R.autoSyncReperibilita !== false;
                 let requestId;
                 if (window.editingId) {
+                    // Se si cambiano solo le note, la richiesta resta approvata/inserita com'era.
+                    // Prima ogni modifica rimetteva l'approvazione "in attesa" e toglieva
+                    // "inserita nei turni" anche quando date, persone e tipo non cambiavano.
+                    const old = requests.find(x => x.id === window.editingId);
+                    const KEYS = ['name', 'type', 'swapWith', 'timeSlot', 'myShift', 'otherShift', 'dateFrom', 'dateTo', 'restDateOther', 'effectiveDays'];
+                    if (old && KEYS.every(k => (old[k] ?? null) === (payload[k] ?? null))) {
+                        payload.headNurseApproval = old.headNurseApproval || payload.headNurseApproval;
+                        payload.insertedInShifts = !!old.insertedInShifts;
+                        payload.insertedAt = old.insertedAt || null;
+                    }
                     await updateDoc(doc(db, "richieste_turni", window.editingId), payload);
                     requestId = window.editingId;
                 } else {
@@ -1476,9 +1823,8 @@
                 if (doSyncRep) {
                     await syncReperibilitaOverrides(requestId, { ...payload, obscured: false });
                 }
-                if (payload.type === 'cambio_turno') {
-                    await syncTurnoOverride(requestId, { ...payload, obscured: false });
-                }
+                // Sempre: se in modifica il tipo non è più un cambio, il vecchio scambio sparisce.
+                await syncTurnoOverride(requestId, { ...payload, obscured: false });
 
                 document.getElementById('requestForm').reset();
                 window.editingId = null;
@@ -1523,7 +1869,7 @@
             if (confirm("Eliminare definitivamente?")) {
                 try {
                     await removeReperibilitaOverrides(id);
-                    await deleteDoc(doc(db, "turno_overrides", id)).catch(() => {});
+                    await removeTurnoOverrides(id);
                     await deleteDoc(doc(db, "richieste_turni", id));
                     window.closeModal('detail-modal');
                 }
@@ -1536,7 +1882,7 @@
                 try {
                     await updateDoc(doc(db, "richieste_turni", id), { obscured: true });
                     await removeReperibilitaOverrides(id);
-                    await deleteDoc(doc(db, "turno_overrides", id)).catch(() => {});
+                    await removeTurnoOverrides(id);
                     window.closeModal('detail-modal');
                 }
                 catch (e) { console.error(e); }
@@ -1551,7 +1897,7 @@
                     if (BIBBIA_CONFIG_R.autoSyncReperibilita !== false) {
                         await syncReperibilitaOverrides(id, { ...r, obscured: false });
                     }
-                    if (r.type === 'cambio_turno') {
+                    if (isSwapType(r.type)) {
                         await syncTurnoOverride(id, { ...r, obscured: false });
                     }
                 }
@@ -1606,9 +1952,12 @@
             } catch(e) { console.error(e); }
         };
 
-        window.toggleMonth = function(id) {
+        // Ricorda quali mesi sono aperti: prima ogni aggiornamento della lista li richiudeva.
+        const monthOpenState = {};
+        window.toggleMonth = function(id, month) {
             const el   = document.getElementById(id);
             const icon = document.getElementById('icon_' + id);
+            if (month) monthOpenState[month] = el.style.display === 'none';
             if (el.style.display === 'none') {
                 el.style.display = 'block';
                 icon.textContent = 'expand_less';
@@ -1629,74 +1978,112 @@
         // ============================================================
         // RENDER LISTA
         // ============================================================
+        // Filtro della lista: tutte / le mie (anche quelle in cui sono il collega) / da gestire.
+        let listFilter = 'tutte';
+        try { listFilter = localStorage.getItem('118_req_filter') || 'tutte'; } catch (e) {}
+        window.setListFilter = function(f) {
+            listFilter = f;
+            try { localStorage.setItem('118_req_filter', f); } catch (e) {}
+            window.renderRequests();
+        };
+        const isMine = (r) => {
+            const me = normalizeRepNameR(currentUser || '');
+            return !!me && (normalizeRepNameR(r.name) === me || normalizeRepNameR(r.swapWith) === me);
+        };
+        const isPending = (r) => {
+            if (r.obscured) return false;
+            if (r.headNurseApproval === 'no') return false;
+            if (r.insertedInShifts) return false;
+            if (isAutoImported(r)) return false;
+            return true;
+        };
+        // Periodo in breve per la riga della lista.
+        function periodText(r) {
+            if (r.type === 'cambio_riposo') return `riposo ${formatDateShort(r.dateFrom)} ⇄ ${formatDateShort(r.restDateOther)}`;
+            const dFrom = formatDateIt(r.dateFrom), dTo = formatDateIt(r.dateTo || r.dateFrom);
+            let t = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
+            if (r.type === 'copertura_reperibilita' && r.timeSlot) t += ` (${r.timeSlot})`;
+            return t;
+        }
+        function formatDateShort(iso) {
+            const p = String(iso || '').split('-');
+            return p.length === 3 ? `${p[2]}/${p[1]}` : (iso || '?');
+        }
+
         window.renderRequests = function() {
             const container = document.getElementById('requests-container');
-            const search    = document.getElementById('searchInput').value.toLowerCase();
+            const search    = document.getElementById('searchInput').value.toLowerCase().trim();
+            const isManager = window.isAdmin || currentUser === 'Centrale 118';
             container.innerHTML = "";
 
-            const filtered = requests.filter(r =>
-                r.name.toLowerCase().includes(search) ||
-                getLabel(r.type).toLowerCase().includes(search)
-            );
+            document.querySelectorAll('#listFilters .list-filter').forEach(b => b.classList.toggle('active', b.dataset.f === listFilter));
+            const allPending = requests.filter(isPending).length;
+            const pc = document.getElementById('pendingCount');
+            if (pc) pc.textContent = allPending ? '(' + allPending + ')' : '';
+
+            const filtered = requests.filter(r => {
+                if (listFilter === 'mie' && !isMine(r)) return false;
+                if (listFilter === 'attesa' && !isPending(r)) return false;
+                if (!search) return true;
+                return String(r.name || '').toLowerCase().includes(search) ||
+                    String(r.swapWith || '').toLowerCase().includes(search) ||
+                    getLabel(r.type).toLowerCase().includes(search);
+            });
 
             if (filtered.length === 0) {
-                container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>Nessuna richiesta</h3></div>`;
+                const why = listFilter === 'mie' ? (currentUser ? 'Nessuna richiesta tua o con te come collega' : 'Scegli prima il tuo nome')
+                    : listFilter === 'attesa' ? 'Niente da gestire: tutto in ordine' : 'Nessuna richiesta';
+                container.innerHTML = `<div class="empty-state"><span class="material-icons-round">list_alt</span><h3>${why}</h3></div>`;
                 return;
             }
 
-            const isPending = (r) => {
-                if (r.obscured) return false;
-                if (r.headNurseApproval === 'no') return false;
-                if (r.insertedInShifts) return false;
-                if (isAutoImported(r)) return false;
-                return true;
-            };
-
-            const pendingRequests = filtered.filter(isPending).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-            const otherRequests   = filtered.filter(r => !isPending(r)).sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            const byTime = (a, b) => new Date(b.timestamp) - new Date(a.timestamp);
+            const pendingRequests = filtered.filter(isPending).sort(byTime);
+            const otherRequests   = filtered.filter(r => !isPending(r)).sort(byTime);
 
             const generateRow = (r) => {
-                const dFrom    = new Date(r.dateFrom).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const dTo      = new Date(r.dateTo).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const dateStr  = dFrom === dTo ? dFrom : `${dFrom} - ${dTo}`;
-                const sendDate = new Date(r.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+                const sendDate = r.timestamp ? new Date(r.timestamp).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
 
                 // Oscurata — vista utente normale
-                if (r.obscured && !window.isAdmin && currentUser !== 'Centrale 118') {
+                if (r.obscured && !isManager) {
                     return `
                         <div class="list-row row-obscured" onclick="window.openDetailModal('${r.id}')">
                             <div class="row-icon bg-default"><span class="material-icons-round" style="font-size:18px">visibility_off</span></div>
                             <div class="row-content">
                                 <div class="row-header">
-                                    <div class="row-title">${r.name}</div>
-                                    <div class="row-date-sent">Richiesta del: ${sendDate}</div>
+                                    <div class="row-title">${esc(r.name)}</div>
+                                    <div class="row-date-sent">Inviata il ${sendDate}</div>
                                 </div>
                                 <div class="row-details" style="color: #ef4444; font-weight: 700;">Richiesta Ritirata / Oscurata</div>
                             </div>
                         </div>`;
                 }
 
-                let rowClass = r.obscured ? "row-obscured"
+                const auto = isAutoImported(r);
+                const rowClass = r.obscured ? "row-obscured"
                     : r.headNurseApproval === 'no' ? "row-rejected"
-                    : (r.insertedInShifts || isAutoImported(r)) ? "row-confirmed"
+                    : (r.insertedInShifts || auto) ? "row-confirmed"
                     : "row-pending";
 
-                const autoBadge = isAutoImported(r) ? `<span style="color:#059669;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #10b981;">✓ Importata in automatico</span>` : '';
-
-                let caposalaBadge = '';
-                if (APPROVAL_TYPES.includes(r.type) && !r.obscured) {
-                    if (r.headNurseApproval === 'si')    caposalaBadge = `<span style="color:#059669;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #10b981;">✓ Approvata</span>`;
-                    else if (r.headNurseApproval === 'no') caposalaBadge = `<span style="color:#dc2626;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #ef4444;">✗ Rifiutata</span>`;
-                    else caposalaBadge = `<span style="color:#d97706;font-weight:800;background:rgba(255,255,255,0.7);padding:2px 6px;border-radius:4px;font-size:0.65rem;border:1px solid #f59e0b;">⏳ Attesa</span>`;
+                // Stato scritto in parole (oltre al colore della riga).
+                let chips = '';
+                if (!r.obscured) {
+                    if (APPROVAL_TYPES.includes(r.type)) {
+                        if (r.headNurseApproval === 'si')      chips += `<span class="status-chip st-ok">✓ Approvata</span>`;
+                        else if (r.headNurseApproval === 'no') chips += `<span class="status-chip st-no">✗ Non approvata</span>`;
+                        else                                   chips += `<span class="status-chip st-wait">⏳ Da approvare</span>`;
+                    }
+                    if (auto) chips += `<span class="status-chip st-ok">✓ ${r.type === 'copertura_reperibilita' ? 'Importata' : 'Applicato'} in automatico</span>`;
+                    else if (r.insertedInShifts) chips += `<span class="status-chip st-ok">✓ Inserita nei turni</span>`;
+                    else if (r.headNurseApproval !== 'no') chips += `<span class="status-chip st-wait">⏳ Da inserire nei turni</span>`;
                 }
 
-                let periodDetails = dateStr;
-                if (r.type === 'copertura_reperibilita' && r.timeSlot) periodDetails += ` (${r.timeSlot})`;
-                if (r.swapWith) periodDetails += ` ↔ ${r.swapWith}`;
+                let periodDetails = esc(periodText(r));
+                if (r.swapWith) periodDetails += ` · con ${esc(r.swapWith)}`;
 
-                const adminTag     = (r.obscured && (window.isAdmin || currentUser === 'Centrale 118')) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
+                const adminTag     = (r.obscured && isManager) ? `<span style="color:#ef4444;font-size:0.65rem;margin-right:4px;">[OSCURATA]</span>` : '';
                 const insertButton = (!r.obscured && window.isAdmin) ? `
-                    <button class="btn-quick-insert ${r.insertedInShifts ? 'inserted' : ''}" onclick="event.stopPropagation(); window.toggleInserted('${r.id}', ${r.insertedInShifts})">
+                    <button class="btn-quick-insert ${r.insertedInShifts ? 'inserted' : ''}" onclick="event.stopPropagation(); window.toggleInserted('${r.id}', ${!!r.insertedInShifts})">
                         <span class="material-icons-round" style="font-size:14px">${r.insertedInShifts ? 'check_circle' : 'radio_button_unchecked'}</span>
                         ${r.insertedInShifts ? 'Inserito' : 'Segna inserito'}
                     </button>` : '';
@@ -1706,27 +2093,28 @@
                         <div class="row-icon ${getColor(r.type)}"><span class="material-icons-round" style="font-size:18px">${getIcon(r.type)}</span></div>
                         <div class="row-content">
                             <div class="row-header">
-                                <div class="row-title">${adminTag}${r.name}</div>
-                                <div class="row-date-sent">Richiesta del: ${sendDate}</div>
+                                <div class="row-title">${adminTag}${esc(r.name)}</div>
+                                <div class="row-date-sent">Inviata il ${sendDate}</div>
                             </div>
                             <div class="row-details">
-                                <span style="color:var(--text-sec);">Tipo:</span> <strong>${getLabel(r.type)}</strong> • <span style="color:var(--primary);font-weight:600;">${periodDetails}</span>
+                                <strong>${esc(getLabel(r.type))}</strong> • <span style="color:var(--primary);font-weight:600;">${periodDetails}</span>
                             </div>
-                            ${(!r.obscured && (caposalaBadge || autoBadge || insertButton)) ? `
+                            ${(!r.obscured && (chips || insertButton)) ? `
                             <div class="row-actions">
-                                <div>${caposalaBadge}${autoBadge}</div>
+                                <div>${chips}</div>
                                 <div>${insertButton}</div>
                             </div>` : ''}
                         </div>
                     </div>`;
             };
 
+            let html = '';
             if (pendingRequests.length > 0) {
-                container.innerHTML += `<div class="section-title" style="color:#ef4444;">In Attesa d'Azione</div><div class="month-group" style="border: 2px solid #fee2e2;">${pendingRequests.map(generateRow).join('')}</div>`;
+                html += `<div class="section-title" style="color:#ef4444;">Da gestire (${pendingRequests.length})</div><div class="month-group" style="border: 2px solid #fee2e2;">${pendingRequests.map(generateRow).join('')}</div>`;
             }
 
             if (otherRequests.length > 0) {
-                container.innerHTML += `<hr style="border:none;border-top:2px solid #0f172a;margin:25px 5px 15px 5px;">`;
+                html += `<div class="section-title">Concluse e storico</div>`;
 
                 const groups    = {};
                 const groupKeys = [];
@@ -1741,25 +2129,25 @@
                 const capCurrent = currentMonthName.charAt(0).toUpperCase() + currentMonthName.slice(1);
 
                 groupKeys.forEach((month, idx) => {
-                    const isPast       = (month !== capCurrent);
-                    const displayStyle = isPast ? 'none' : 'block';
-                    const iconStr      = isPast ? 'expand_more' : 'expand_less';
+                    // aperto il mese in corso (o il primo, se si sta cercando/filtrando)
+                    const open         = (month in monthOpenState) ? monthOpenState[month]
+                        : (month === capCurrent || ((search || listFilter !== 'tutte') && idx === 0));
                     const containerId  = `month_group_${idx}`;
-
-                    container.innerHTML += `
+                    html += `
                         <div class="month-group">
-                            <div class="month-header" onclick="window.toggleMonth('${containerId}')">
+                            <div class="month-header" onclick="window.toggleMonth('${containerId}', '${month}')">
                                 <div style="display:flex;align-items:center;gap:6px;">
-                                    <span class="material-icons-round" style="font-size:16px">calendar_month</span> Inserite a: ${month}
+                                    <span class="material-icons-round" style="font-size:16px">calendar_month</span> Inviate a ${month} (${groups[month].length})
                                 </div>
-                                <span class="material-icons-round" id="icon_${containerId}" style="font-size:20px;">${iconStr}</span>
+                                <span class="material-icons-round" id="icon_${containerId}" style="font-size:20px;">${open ? 'expand_less' : 'expand_more'}</span>
                             </div>
-                            <div id="${containerId}" style="display:${displayStyle};">
+                            <div id="${containerId}" style="display:${open ? 'block' : 'none'};">
                                 ${groups[month].map(generateRow).join('')}
                             </div>
                         </div>`;
                 });
             }
+            container.innerHTML = html;
         };
 
         // ============================================================
@@ -1773,29 +2161,37 @@
 
             html += `<div class="detail-item" style="background:#f8fafc;padding:12px;border-radius:8px;">
                         <div class="detail-label" style="color:var(--primary);">Data e Ora Invio Richiesta</div>
-                        <div class="detail-value" style="font-size:0.95rem;">${new Date(r.timestamp).toLocaleString('it-IT')}</div>
+                        <div class="detail-value" style="font-size:0.95rem;">${r.timestamp ? new Date(r.timestamp).toLocaleString('it-IT') : '—'}</div>
                      </div>`;
 
             html += `<div class="detail-item" style="background:#f8fafc;padding:12px;border-radius:8px;">
                         <div class="detail-label" style="color:var(--primary);">Stato Inserimento Turni</div>
                         <div class="detail-value" style="font-size:0.95rem;">
                             ${isAutoImported(r)
-                                ? `<span style="color:#059669;font-weight:700;">✓ Importata in automatico nel programma turni</span>`
+                                ? `<span style="color:#059669;font-weight:700;">✓ ${r.type === 'copertura_reperibilita' ? 'Importata' : 'Applicato'} in automatico nel programma turni</span>`
                                 : r.insertedInShifts
                                 ? `<span style="color:#059669;font-weight:700;">✓ Inserita il ${r.insertedAt ? new Date(r.insertedAt).toLocaleString('it-IT') : 'Data non disponibile'}</span>`
                                 : `<span style="color:#64748b;font-weight:700;">⏳ In attesa di inserimento</span>`}
                         </div>
                      </div>`;
 
-            html += `<div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${r.name}</div></div>
-                     <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${getLabel(r.type)}</div></div>`;
+            html += `<div class="detail-item"><div class="detail-label">Operatore</div><div class="detail-value">${esc(r.name)}</div></div>
+                     <div class="detail-item"><div class="detail-label">Tipo Richiesta</div><div class="detail-value">${esc(getLabel(r.type))}</div></div>`;
 
-            if (r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${r.swapWith}</div></div>`;
-            if (r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fasce Orarie Scelte</div><div class="detail-value">${r.timeSlot}</div></div>`;
+            if (r.swapWith) html += `<div class="detail-item"><div class="detail-label">Cambio/Copertura con</div><div class="detail-value" style="color:var(--primary)">${esc(r.swapWith)}</div></div>`;
+            if (r.timeSlot) html += `<div class="detail-item"><div class="detail-label">Fasce Orarie Scelte</div><div class="detail-value">${esc(r.timeSlot)}</div></div>`;
+            if (r.type === 'cambio_turno' && (r.myShift || r.otherShift)) {
+                const SN = { M: 'Mattina', P: 'Pomeriggio', N: 'Notte' };
+                html += `<div class="detail-item"><div class="detail-label">Turni scambiati</div><div class="detail-value">${esc(r.name)}: ${SN[r.myShift] || esc(r.myShift || '?')} ⇄ ${esc(r.swapWith)}: ${SN[r.otherShift] || esc(r.otherShift || '?')}</div></div>`;
+            }
+            if (r.type === 'cambio_riposo') {
+                html += `<div class="detail-item"><div class="detail-label">Cosa cambia</div><div class="detail-value" style="font-weight:500;font-size:0.88rem;line-height:1.6;">${riposoPlanHtml(r.name, r.swapWith, r.dateFrom, r.restDateOther)}</div></div>`;
+            }
 
-            const dFrom   = new Date(r.dateFrom).toLocaleDateString('it-IT');
-            const dTo     = new Date(r.dateTo).toLocaleDateString('it-IT');
-            const periodStr = (r.type === 'copertura_reperibilita' || dFrom === dTo) ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
+            const dFrom   = formatDateIt(r.dateFrom);
+            const dTo     = formatDateIt(r.dateTo || r.dateFrom);
+            const periodStr = r.type === 'cambio_riposo' ? 'Il ' + dFrom + ' e il ' + formatDateIt(r.restDateOther)
+                : (r.type === 'copertura_reperibilita' || dFrom === dTo) ? 'Il ' + dFrom : 'Dal ' + dFrom + ' al ' + dTo;
             const urlTurni  = `https://centrale118rsm-code.github.io/Turni-Autisti-2026-Rsm/?date=${r.dateFrom}#${r.dateFrom}`;
 
             html += `<div class="detail-item">
@@ -1808,13 +2204,13 @@
                         </div>
                      </div>`;
 
-            if (r.type !== 'copertura_reperibilita') {
-                html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${r.effectiveDays}</div></div>`;
+            if (r.effectiveDays && r.effectiveDays !== 'N/A' && r.type !== 'copertura_reperibilita' && !isSwapType(r.type)) {
+                html += `<div class="detail-item"><div class="detail-label">Giorni Effettivi</div><div class="detail-value">${esc(r.effectiveDays)}</div></div>`;
             }
 
-            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400">${r.notes || "—"}</div></div>`;
+            html += `<div class="detail-item"><div class="detail-label">Note</div><div class="detail-value" style="font-weight:400;white-space:pre-wrap;user-select:text;">${r.notes ? esc(r.notes) : "—"}</div></div>`;
 
-            if (r.type === 'cambio_turno') {
+            if (isSwapType(r.type)) {
                 html += `<div style="background:#eff6ff;padding:12px;border-radius:10px;border:1px solid #bfdbfe;margin-bottom:15px;">
                             <div style="display:flex;gap:8px;align-items:flex-start;">
                                 <span class="material-icons-round" style="color:#2563eb;font-size:18px;flex-shrink:0;margin-top:1px;">info</span>
